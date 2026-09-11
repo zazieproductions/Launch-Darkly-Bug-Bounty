@@ -1,0 +1,192 @@
+--- endpoint: GET /api/v2/announcements ---
+HEADER                             VALUE                      CODE  BODY
+LD-Account-Id                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Id                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountId=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?account=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?LD-Account-Id=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountKey=testaccount      -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+--- endpoint: GET /internal/account ---
+HEADER                             VALUE                      CODE  BODY
+LD-Account-Id                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Id                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountId=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?account=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?LD-Account-Id=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountKey=testaccount      -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+--- endpoint: GET /internal/actions ---
+HEADER                             VALUE                      CODE  BODY
+LD-Account-Id                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Id                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountId=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?account=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?LD-Account-Id=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountKey=testaccount      -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+--- endpoint: GET /internal/announcements ---
+HEADER                             VALUE                      CODE  BODY
+LD-Account-Id                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Id                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-ACCOUNT-ID                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account-Id                    testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+AccountId                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LaunchDarkly-Account-Id          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-LD-Account                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Account-Key                     testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account-Key                      testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Tenant-Id                       testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Tenant-Id                        testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Organization-Id                 testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Organization-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Team-Id                         testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+Account                            testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+X-Account                          testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-Api-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  5f0e3a1b2c3d4e5f6a7b8c9d   401   {"code":"unauthorized","message":"Invalid account ID header"}
+LD-App-Account-Id                  testaccount                401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountId=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?account=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?LD-Account-Id=5f0e3a1b2c3d4e5f6a7b8c9d -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
+QUERY ?accountKey=testaccount      -                          401   {"code":"unauthorized","message":"Invalid account ID header"}
