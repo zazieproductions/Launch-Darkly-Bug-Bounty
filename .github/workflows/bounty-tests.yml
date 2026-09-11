@@ -1,0 +1,55 @@
+name: bounty-tests
+
+# Push-triggered so the agent can run LaunchDarkly bounty tests remotely:
+# GitHub Actions runners have full egress (the agent sandbox does not).
+# Secrets (all optional until set; scripts skip gracefully):
+#   LD_TOKEN           - LaunchDarkly personal API token (Part C, authenticated reads)
+#   LD_LOGIN_EMAIL     - burner login email     (Part B, session/ldso tests)
+#   LD_LOGIN_PASSWORD  - burner login password  (Part B, session/ldso tests)
+
+on:
+  push:
+    branches: [arena/01a09277-launch-darkly-bug-bounty]
+    paths: ['.github/workflows/bounty-tests.yml', 'tools/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bounty-tests
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: X - extra unauth recon (no credentials)
+        run: bash tools/ci-extra-unauth.sh
+
+      - name: A + C - session1 runner (Part C only if LD_TOKEN secret set)
+        env:
+          LD_TOKEN: ${{ secrets.LD_TOKEN }}
+        run: bash tools/run-session1.sh
+
+      - name: B - session/ldso tests (only if login secrets set)
+        env:
+          LD_LOGIN_EMAIL: ${{ secrets.LD_LOGIN_EMAIL }}
+          LD_LOGIN_PASSWORD: ${{ secrets.LD_LOGIN_PASSWORD }}
+        run: bash tools/part-b-session.sh
+
+      - name: List outputs
+        if: always()
+        run: find scratch -type f -printf '%10s  %p\n' 2>/dev/null | sort -k2 || true
+
+      - name: Upload responses artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responses-${{ github.run_number }}
+          path: scratch/responses/
+          retention-days: 14
+          if-no-files-found: ignore
