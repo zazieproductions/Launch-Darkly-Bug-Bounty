@@ -77,7 +77,15 @@ SDK routes on in-scope hosts, CORS+Origin, docs search reflection, app-host SDK 
   Remaining unread: per-language SDK references, full static action reference (strategy covers
   it), guides pages.
 
-## 2026-09-11 (cont. 3) — User provided a key; Session 1 sheet built
+## 2026-09-11 (cont. 4) — CORRECTION: tokens ARE LaunchDarkly
+
+User confirmed both `api-<uuid>` keys came from Organization settings → Authorization —
+LD's current personal-token format is `api-<uuid>` (older docs predating it show
+`lpat_…`). First key's name was "A.I agent general tasks" (that was the token name field).
+`.env` updated: `LD_TOKEN` (primary, the newer one) + `LD_TOKEN_2`. If the two tokens
+have different roles, that's a ready-made authz contrast pair.
+Immediate next step: user runs the verification batch (A1, A5/A6, C1, C2) and pastes
+responses back (see reply + `plans/session-1-requests.md`).
 
 - User pasted a key labeled "A.I agent general tasks API key" (`api-9fb3…` UUID format).
   Format does NOT match LaunchDarkly credential formats (personal `lpat_…`, service tokens,
