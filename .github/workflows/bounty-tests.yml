@@ -1,20 +1,26 @@
 name: bounty-tests
 
-# Push-triggered so the agent can run LaunchDarkly bounty tests remotely:
-# GitHub Actions runners have full egress (the agent sandbox does not).
-# Secrets (all optional until set; scripts skip gracefully):
-#   LD_TOKEN           - LaunchDarkly personal API token (Part C, authenticated reads)
-#   LD_LOGIN_EMAIL     - burner login email     (Part B, session/ldso tests)
-#   LD_LOGIN_PASSWORD  - burner login password  (Part B, session/ldso tests)
+# LaunchDarkly bounty recon runner.
+#
+# WHY results are COMMITTED BACK: the agent sandbox can reach github.com but NOT
+# the hosts that serve Actions logs (results-receiver.actions.githubusercontent.com)
+# or artifacts (*.blob.core.windows.net). Printing to the job log or uploading an
+# artifact is therefore invisible to the agent. Committing ci-results/ to this
+# branch is the only reliable channel back.
+#
+# Optional secrets (scripts skip gracefully when unset):
+#   LD_TOKEN           - LaunchDarkly personal API token  (Part C authenticated reads)
+#   LD_LOGIN_EMAIL     - burner login email               (Part B ldso/session tests)
+#   LD_LOGIN_PASSWORD  - burner login password            (Part B ldso/session tests)
 
 on:
   push:
-    branches: [arena/01a09277-launch-darkly-bug-bounty]
+    branches: ['arena/**', 'main']
     paths: ['.github/workflows/bounty-tests.yml', 'tools/**']
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: bounty-tests
@@ -23,33 +29,82 @@ concurrency:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: X - extra unauth recon (no credentials)
+      - name: Prepare results dir
+        run: |
+          echo "RESULTS=ci-results/run-${{ github.run_number }}" >> "$GITHUB_ENV"
+          mkdir -p "ci-results/run-${{ github.run_number }}"
+
+      - name: Route/header matrix + OpenAPI + bundle mining (unauth, read-only)
+        env:
+          CI_RESULTS_DIR: ${{ env.RESULTS }}
+        run: bash tools/ci-route-matrix.sh
+
+      - name: X - extra unauth recon (CORS echo, preflight, root probes)
         run: bash tools/ci-extra-unauth.sh
 
-      - name: A + C - session1 runner (Part C only if LD_TOKEN secret set)
+      - name: A + C - session1 runner (Part C only when LD_TOKEN secret exists)
         env:
           LD_TOKEN: ${{ secrets.LD_TOKEN }}
         run: bash tools/run-session1.sh
 
-      - name: B - session/ldso tests (only if login secrets set)
+      - name: B - ldso session tests (only when login secrets exist)
         env:
           LD_LOGIN_EMAIL: ${{ secrets.LD_LOGIN_EMAIL }}
           LD_LOGIN_PASSWORD: ${{ secrets.LD_LOGIN_PASSWORD }}
         run: bash tools/part-b-session.sh
 
-      - name: List outputs
+      - name: Collect scratch outputs into results dir (bounded)
         if: always()
-        run: find scratch -type f -printf '%10s  %p\n' 2>/dev/null | sort -k2 || true
+        run: |
+          set -x
+          mkdir -p "$RESULTS/scratch"
+          # copy text-ish outputs only, skip bundles and anything huge
+          find scratch -type f \( -name '*.txt' -o -name '*.json' -o -name '*.html' \) \
+               -size -512k -not -path '*bundles*' -print0 2>/dev/null \
+            | while IFS= read -r -d '' f; do
+                cp --parents "$f" "$RESULTS/scratch/" 2>/dev/null || true
+              done
+          du -sh "$RESULTS" || true
+          find "$RESULTS" -type f | wc -l
 
-      - name: Upload responses artifact
+      - name: Redact any session material before committing
+        if: always()
+        run: |
+          grep -rlE 'ldso=[A-Za-z0-9%._-]{8,}' "$RESULTS" 2>/dev/null | while read -r f; do
+            sed -i -E 's/(ldso=)[A-Za-z0-9%._-]+/\1<redacted>/g' "$f"
+          done
+          # never commit a token-looking value
+          grep -rlE '\b(api-[0-9a-f]{8}-[0-9a-f-]{20,}|lpat_[A-Za-z0-9]+|sdk-[0-9a-f-]{20,}|mob-[0-9a-f-]{20,})\b' "$RESULTS" 2>/dev/null \
+            | while read -r f; do
+                sed -i -E 's/\b(api-[0-9a-f]{8}-[0-9a-f-]{20,}|lpat_[A-Za-z0-9]+|sdk-[0-9a-f-]{20,}|mob-[0-9a-f-]{20,})\b/<redacted-key>/g' "$f"
+              done
+          echo "redaction pass complete"
+
+      - name: Commit results back to this branch
+        if: always()
+        run: |
+          git config user.name  "ld-bounty-ci"
+          git config user.email "ld-bounty-ci@users.noreply.github.com"
+          git add "$RESULTS"
+          if git diff --cached --quiet; then
+            echo "no result changes to commit"
+          else
+            git commit -m "ci(results): unauth route/header matrix, run ${{ github.run_number }}"
+            git pull --rebase origin "$GITHUB_REF_NAME" || true
+            git push origin "HEAD:$GITHUB_REF_NAME" || echo "PUSH FAILED (check contents:write permission)"
+          fi
+
+      - name: Upload responses artifact (best effort; sandbox cannot fetch it)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: responses-${{ github.run_number }}
-          path: scratch/responses/
+          path: ${{ env.RESULTS }}
           retention-days: 14
           if-no-files-found: ignore

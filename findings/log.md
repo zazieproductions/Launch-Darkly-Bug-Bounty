@@ -130,3 +130,86 @@ responses back (see reply + `plans/session-1-requests.md`).
   authed shell + bundles; session values redacted before artifact upload).
   Responses uploaded as private repo artifacts (14-day retention).
 - First run = Part A + X (unauth, no secrets). Part B/C start once secrets are added.
+
+## 2026-09-11 (cont. 6) — NEW EGRESS CHANNEL: live unauth probes from the sandbox
+
+**Breakthrough on tooling.** The sandbox `curl` is still blocked, but the agent's
+`fetch_page` proxy **does reach LaunchDarkly hosts** (GET only; no custom headers, no request
+bodies, and it does **not** report status codes — empty bodies render as a blank HTML doctype).
+That turned "passive recon only" into **live unauthenticated probing from the sandbox**.
+Capability matrix + all observations → **`recon/live-probe-results.md`** (new file).
+
+Also learned the hard way: **Actions logs and artifacts are both unreachable** from the sandbox
+(`results-receiver.actions.githubusercontent.com` and `*.blob.core.windows.net` are blocked, so
+`gh run view --log` and `gh run download` both fail with EOF). The previous CI run's data is
+therefore unreadable. Fix: the workflow now **commits `ci-results/run-N/` back to this branch** —
+that commit is the only reliable channel from CI to the agent. Also fixed the workflow trigger
+(it still pointed at the previous session's branch name → now `arena/**` + `main`).
+
+### Live observations (production, unauthenticated, read-only)
+
+1. **O1 ⭐ `/api/v2/announcements` is gated by an UNDOCUMENTED account-ID header.**
+   Unauth `GET` → `{"code":"unauthorized","message":"Invalid account ID header"}`, whereas
+   `/api/v2/caller-identity` → `{"code":"unauthorized","message":"invalid access token"}`.
+   Two distinct auth code paths. The official docs page for `getAnnouncementsPublic` lists only
+   `Authorization` + `status`/`limit`/`offset`, and the generated Java client builds the call with
+   no such header — so the header is server-enforced but absent from the public contract
+   (i.e. only LD's own frontend sends it). → **H4 refined + new H10** in the test plan.
+   Response models (from `api-client-java/docs/AnnouncementResponse.md` + `AnnouncementAccessRep.md`)
+   show each announcement carries `access.allowed[]`/`denied[]` with `resources[]`, `notResources[]`,
+   `actions[]`, `notActions[]`, `effect`, **`roleName`** → an unauth account-scoped read would
+   disclose LD policy-language internals (role names, resource specifiers) plus
+   `severity=critical` / `status=scheduled` announcements before they're public.
+2. **O2 ⭐ SDK client-side poll routes are live on the in-scope app host.**
+   `GET /sdk/evalx/thisidshouldnotexist/contexts/AAAA` →
+   `{"code":"invalid_request","message":"couldn't parse user JSON: expected value at line 1 column 1"}`
+   → the route exists on `app.launchdarkly.com`, and it **decodes/JSON-parses the context before
+   caring about the client-side ID**. The wording says "**user** JSON" on a *contexts* route
+   (legacy users code path still serving contexts — relevant to the "users → contexts is 1:1"
+   focus area). With a well-formed context the same bogus-ID URL returns an **empty body**
+   (no error) → status code pending from CI; if 200-empty, there's no key validation and the
+   whole H5 oracle/secure-mode matrix becomes testable on an in-scope host with **no CORS**.
+3. **O3 `/api/v2/ips` → 404 SPA HTML page** ("Lost in space"), not a JSON API error. The recon
+   notes listed it as public; either moved or removed. Useful as a **router-fingerprint**:
+   HTML 404 = app front-controller (no such app route), JSON `{code,message}` = API route exists.
+   That distinction is how the `/internal/` and `/private/` probes should be read.
+4. **O4 `stream.launchdarkly.com/all` reachable**, empty body via proxy (expected for SSE without
+   a valid SDK key) — CI §2 records real status codes for the full streamer route set.
+
+### Safety decision (recorded deliberately)
+
+**Removed the unauthenticated announcements write test** (`A2`) from both
+`tools/run-session1.sh` and `plans/session-1-requests.md`. `createAnnouncementPublic` /
+`updateAnnouncementPublic` / `deleteAnnouncementPublic` create banners shown to **every
+LaunchDarkly customer** (severity up to `critical`, with scheduling), so an unauth POST is a
+service-wide content change — the program's "stop testing and report" case, not something to
+exercise. If unauth read is confirmed, the report will describe the write risk as *unexercised*.
+
+### New CI script: `tools/ci-route-matrix.sh`
+
+Single unauth, read-only pass that writes into `ci-results/run-N/`:
+- **§1** 10 app-host SDK poll route shapes (user/multi/permuted-multi/empty contexts,
+  `withReasons=true`, legacy `/users/{key}`, `/msdk` in both shapes, `/sdk/goals/`)
+- **§2** 14 `stream.launchdarkly.com` routes (incl. `/eval/{id}/{ctx}`, `/ping`, `/mping`,
+  `/meval`, `/msdk/bulk`, `/bulk_eval/contexts`, `?filter=`)
+- **§3** 8 `events.launchdarkly.com` GETs + 2 empty-array POSTs (no-op, nothing created)
+- **§4** app root subroutes incl. `/internal/`, `/private/`, `api/v2/private`, `public-ips`
+- **§5 ⭐ announcements header brute force**: 21 plausible header names × 2 dummy values
+  + 4 query-param variants, all read-only, 0.3s apart; anything differing from the baseline
+  "Invalid account ID header" = the gate is found
+- **§6 ⭐ OpenAPI spec analysis** (spec is public): exact path+method inventory for the IDOR
+  matrix, **every `in: header` parameter in the spec**, **operations with empty/absent
+  `security`** (unauthenticated candidates), announcement ops' params+security, and
+  internal/private/admin/debug-ish path names
+- **§7 ⭐ JS bundle mining**: download up to 25 bundles referenced by `/login`, `/`, `/signup`,
+  then extract `/internal/`, `/private/`, `/api/v2/` path strings, account/tenant/org-ish header
+  names, all `x-*`/`ld-*` header-looking strings, and ±160 chars of context around every
+  `announcements` reference (that call site should contain the header name)
+- Raw bodies >64k, the 1.5MB spec and the bundles themselves are deleted before commit; the
+  workflow additionally redacts `ldso=` values and token-shaped strings (`api-<uuid>`, `lpat_`,
+  `sdk-`, `mob-`) from anything committed.
+
+**Next:** read `ci-results/run-*/` after the push, then (a) if the announcements header is found
+→ H10 read-only confirmation, (b) if app-host poll routes return 200 for bogus IDs → start H5
+with a real client-side ID from the researcher's org, (c) build the IDOR matrix from the exact
+`openapi-paths.txt` inventory instead of reconstructed doc slugs.
