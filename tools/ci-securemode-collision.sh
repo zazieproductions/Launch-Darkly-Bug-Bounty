@@ -48,10 +48,11 @@ if [ ! -s "$OUT/raw3/dogfood-config.json" ]; then
 fi
 
 # 2. derive the test contexts locally (spec-exact canonicalKey, per Go/JS sources)
-python3 - "$OUT/raw3/dogfood-config.json" "$OUT/raw3" <<'PY' | tee -a "$RES"
+python3 - "$OUT/raw3/dogfood-config.json" "$OUT/raw3" "$LD" <<'PY' 2>&1 | tee -a "$RES"
 import base64, json, sys
 cfg = json.load(open(sys.argv[1], errors='ignore'))
 outdir = sys.argv[2]
+LD = sys.argv[3]          # the shell variable is not visible inside a quoted heredoc
 csid = cfg.get('clientSideId')
 ctx  = cfg.get('dogfoodContext')
 h    = cfg.get('secureModeContextHash')
@@ -101,7 +102,7 @@ print(f"  test contexts written : {', '.join(cases)}")
 PY
 
 PLAN="$OUT/raw3/plan.json"
-[ -s "$PLAN" ] || { echo "  no plan produced — aborting" | tee -a "$RES"; exit 0; }
+[ -s "$PLAN" ] || { echo "  no plan produced (python step failed; see traceback above) — aborting" | tee -a "$RES"; exit 0; }
 HASH=$(python3 -c "import json;print(json.load(open('$PLAN'))['hash'] or '')")
 
 req() { # req <label> <url> [extra args]
