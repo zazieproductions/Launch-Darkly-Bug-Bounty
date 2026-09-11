@@ -1,0 +1,132 @@
+# Research Log
+
+## 2026-09-11 — Setup + passive recon (agent-assisted)
+
+**Environment:** agent sandbox egress is GitHub-only; LaunchDarkly hosts not directly reachable.
+Passive recon via docs proxy + GitHub source. Active testing must run from researcher's machine.
+
+**Docs / API surface (from `launchdarkly.com/docs`):**
+- Full REST API endpoint inventory captured → `recon/api-endpoints.md` (~60 resource groups).
+- API mechanics noted: CORS echoes any Origin (session auth relies on Origin check),
+  `X-HTTP-Method-Override` for POST→PATCH/PUT/DELETE, `LD-API-Version` per-request versioning
+  (20160426→20240415 + `beta`), semantic patches, `expand=`, JSON error format, rate-limit headers.
+- Public endpoints: `/api/v2/openapi.json` (any auth string accepted), `/api/v2/ips`,
+  `/api/v2/caller-identity` (has `bountyEligible`), root.
+- "Announcements" API has *`-public`* endpoint names → hypothesis H4 (unauth?).
+- `docs.launchdarkly.com` now redirects to `launchdarkly.com/docs` (Fern docs; `llms.txt`/`.md`
+  conventions + MCP server for agents).
+- SDK "Domain list" captured → `recon/domains-and-instances.md`. Only
+  `stream.launchdarkly.com` + `events.launchdarkly.com` in scope among SDK hosts; EU/federal
+  instances out of scope.
+
+**SDK source review (cloned → `sdk/`, gitignored):**
+- `launchdarkly/js-core` (current browser/server-node/react/vue/svelte/RN/edge/openfeature SDKs)
+  + `launchdarkly/react-client-sdk` (v5).
+- Wire format + new features documented → `recon/sdk-wire-format.md`:
+  context base64url in URL path; `REPORT` HTTP verb option; `withReasons`, `h` (secure-mode
+  HMAC-SHA256(sdkKey, canonicalKey)), `filter` (views — new Aug 2026); FDv2 processors;
+  React Server Components support (new); no XSS primitives in React SDK (grep clean).
+- No obvious client-side SDK vulns from passive review; real targets are server-side handler
+  behaviors driven by these formats (see test-plan Phase 4).
+
+**Hypotheses written** → `plans/test-plan.md` (P0 unauth batch first: announcements, /private,
+SDK routes on in-scope hosts, CORS+Origin, docs search reflection, app-host SDK polling paths).
+
+## 2026-09-11 (cont.) — SDK docs deep-dive (`launchdarkly.com/docs/sdk`)
+
+- Full SDK docs index + security-critical pages read → new file `recon/sdk-docs.md`.
+- **Secure mode page confirms the client-side oracle threat model verbatim**: without secure
+  mode, a public client-side ID can identify another user's flag values by evaluating their
+  context keys; secure mode = HMAC-SHA256(sdkKey, canonicalKey) sent as `h`, per-env opt-in.
+  → Wrote **H5** (oracle + bypass matrix: canonicalKey collisions, route coverage, credential
+  mixing, reasons leakage with valid hash).
+- **Private attributes**: client SDKs send private attrs for eval; LD must not store/echo.
+  → Wrote **H6** (leakage matrix across evalx/stream/events/REST context APIs/audit/legacy
+  users endpoints; JSON-pointer fuzz of the privacy stripper).
+- **Filtered payloads/views** (beta): per-key view filter, `filter=` param, 10 views/key.
+  → Wrote **H7** (cross-key/cross-project view filter abuse + Views Beta authz).
+- **Events**: `index`/`identify` create/overwrite context instances; `feature` events power
+  Experimentation + new **Guarded rollouts**. → Wrote **H8** (attribute tampering via re-identify)
+  and **H9** (experiment/guarded-rollout metric tampering — focus area).
+- Local storage caching = per-browser only → documented, not reportable (time-saver).
+- Test plan updated: new Phases 4a/4b inserted; sequencing re-ordered.
+
+## 2026-09-11 (cont. 2) — Product docs deep-dive (`launchdarkly.com/docs/home`)
+
+- Read focus-area feature docs → new file `recon/app-features.md`:
+  - **Guarded rollouts** (new, trial on all accounts): sequential-testing regression → auto
+    rollback; **minimum-context gate per step**. Attack: unique-context counting, gameable
+    rollback, masked regressions, step timing, exclusivity enforcement → H9 extended.
+  - **Experiment traffic assignment** (new doc 2026-09-09): seed+key → 100k buckets,
+    deterministic, no stored assignments; tracked/untracked; layers (shared seed, snapshots);
+    holdouts. Attack: seed exposure in client payloads, reshuffle path behavior (Edit design vs
+    Stop), analysis pipeline trusting event claims vs re-deriving assignments → Phase 5 + H9.
+  - **SDK credentials**: `sdk-` (secret) / `mob-` / client-side ID (alphanumeric, uncreatable);
+    multiple keys per env; expiry; view-scoped keys rejected by Relay Proxy. Attack: `viewSdkKey`
+    gating on SDK Keys Beta list/get (key material disclosure), key-reuse protection.
+  - **Role actions**: captured the full "Recently added actions" table (2025-09 → 2026-09, ~60
+    actions) incl. `bypassRequiredSegmentApproval`, `updateAccessTokenExpiry` (member + service
+    tokens), `updateAccountTokenLimit`, `revokeSessions`, IP allowlist actions, SDK-key CRUD
+    actions. Strategy: new-action PCE sweep (endpoints with roles lacking the action; stale
+    preset roles; wildcard action injection in custom roles) → Phase 2 extended.
+  - **Context model**: kinds/instances/**instance versions** (per source SDK), multi-contexts,
+    built-in attrs (kind/key/name/anonymous), **auto kind creation via SDK eval**. Attack: kind
+    creation edge cases, multi-context canonicalKey permutation (H5-4), instance-version
+    private-attr leakage (H6) → Phase 5 extended.
+- All three doc sections (api / sdk / home) now mined for the security-relevant surface.
+  Remaining unread: per-language SDK references, full static action reference (strategy covers
+  it), guides pages.
+
+## 2026-09-11 (cont. 4) — CORRECTION: tokens ARE LaunchDarkly
+
+User confirmed both `api-<uuid>` keys came from Organization settings → Authorization —
+LD's current personal-token format is `api-<uuid>` (older docs predating it show
+`lpat_…`). First key's name was "A.I agent general tasks" (that was the token name field).
+`.env` updated: `LD_TOKEN` (primary, the newer one) + `LD_TOKEN_2`. If the two tokens
+have different roles, that's a ready-made authz contrast pair.
+Immediate next step: user runs the verification batch (A1, A5/A6, C1, C2) and pastes
+responses back (see reply + `plans/session-1-requests.md`).
+
+- User pasted a key labeled "A.I agent general tasks API key" (`api-9fb3…` UUID format).
+  Format does NOT match LaunchDarkly credential formats (personal `lpat_…`, service tokens,
+  `sdk-`/`mob-` keys, alphanumeric client-side IDs). Stored in gitignored `.env` as
+  `PROVIDED_API_KEY` with a caveat; **awaiting user confirmation of what it is**.
+  (Also noted: LD docs mention tokens can authenticate the OTLP ingestion endpoint —
+  `otel.observability.app.launchdarkly.com` — new auth surface for later.)
+- Confirmed token model from `home/account/api`: personal vs service tokens, role/inline-policy
+  scoping, `showAll=true` on /tokens requires Admin.
+- Built **`plans/session-1-requests.md`** — exact copy-paste request sheet:
+  - Part A (unauth): announcements public endpoints (H4 read + flagged optional write),
+    caller-identity/ips, streamer route existence loop, app-host SDK fallback routes,
+    events no-op POST, CORS/Origin browser snippet (H1 read side), docs search reflection.
+  - Part B: account + Owner personal token + org inventory.
+  - Part C (auth baseline reads): caller-identity, `projects?expand=environments`
+    (**returns real sdk-/mob- key values + `secureMode` flag** — key-material & H5 goldmine),
+    context-kinds, sdk-keys (beta; full key values in response), tokens (last-4 check),
+    relay-auto-configs (**`fullKey` in list**), webhooks (**`secret` field documented in
+    list response**), experiments, auditlog (limit 1–20), announcements (auth vs unauth),
+    teams/custom-roles, and an `LD-API-Version: 20160426` pinned call.
+  - Exact paths verified against API reference pages (auditlog NOT audit-logs;
+    context-kinds under /projects/{key}/context-kinds; relay under /account/relay-auto-configs;
+    sdk-keys requires LD-API-Version: beta).
+- Next: user runs Part A (read-only) + Part B, sends responses (or token). Session 2 =
+  IDOR matrix + PCE sweep + H5.
+
+## 2026-09-11 (cont. 5) — Pivot: GitHub Actions as egress + admin credentials
+
+- User granted **Admin role** (which token(s) TBD — caller-identity will confirm) and provided
+  the burner login (email `…@bugcrowd.com`, password → gitignored `.env`; note the program
+  email domain is `@bugcrowdninja.com` — login may differ from the org account email).
+- Sandbox egress to LD hosts re-verified blocked (SSL_ERROR_SYSCALL). Pivot: **GitHub Actions
+  runners have full egress**; the agent's bot token can push to this repo and read Actions,
+  but cannot set repo secrets (needs repo admin) → user asked to add secrets once.
+- Built CI pipeline `.github/workflows/bounty-tests.yml` (push-triggered on `tools/**` +
+  the workflow file): runs `tools/ci-extra-unauth.sh` (X: live OpenAPI fetch, CORS echo
+  matrix, OPTIONS preflight, root subroute probes incl. `/internal/` + `/private/`, login +
+  app-root shell capture, SPA JS bundle download for `/internal/` endpoint discovery),
+  `tools/run-session1.sh` (Part A always; Part C when `LD_TOKEN` secret exists), and
+  `tools/part-b-session.sh` (B: single login POST → ldso cookie flags, session
+  caller-identity, Origin-check matrix with session, `/private/` probes with session,
+  authed shell + bundles; session values redacted before artifact upload).
+  Responses uploaded as private repo artifacts (14-day retention).
+- First run = Part A + X (unauth, no secrets). Part B/C start once secrets are added.
