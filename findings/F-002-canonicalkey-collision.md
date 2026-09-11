@@ -156,6 +156,20 @@ the first, the SDK can serve the other context's cached flag payload (and overwr
 `ContextIndex` pruning logic). Integrity of client-side evaluation is affected even when the network
 response later corrects it.
 
+**(a2) The context-binding guard on incoming flag updates is defeated too.**
+`js-core/packages/shared/sdk-client/src/flag-manager/FlagUpdater.ts`:
+```ts
+upsert(context: Context, key: string, item: ItemDescriptor): boolean {
+  if (activeContext?.canonicalKey !== context.canonicalKey) {
+    logger.warn('Received an update for an inactive context.');
+    return false;                       // guard meant to stop cross-context payload application
+  }
+```
+Because the guard compares `canonicalKey`, an update carrying a colliding context passes the check and
+is applied to the active context's flag store — the guard that exists to keep one context's payload
+out of another's evaluation does not hold for colliding shapes. (`CacheInitializer.ts` in the FDv2
+datasource keys on `canonicalKey` the same way.)
+
 **(b) Event / context deduplication collision (server SDKs).**
 `js-core/.../events/ContextDeduplicator.ts` and `node-server-sdk/event_processor.js` key their LRU on
 `canonicalKey`:
