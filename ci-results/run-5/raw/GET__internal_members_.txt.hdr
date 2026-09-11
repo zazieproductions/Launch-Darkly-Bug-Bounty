@@ -1,0 +1,13 @@
+HTTP/2 404 
+content-type: text/html; charset=utf-8
+strict-transport-security: max-age=31536000; includeSubDomains
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 23:17:47 GMT
+via: 1.1 varnish
+x-served-by: cache-bfi-krnt7300098-BFI
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789168667.937380,VS0,VE71
+vary: Accept-Encoding
+age: 0
+
