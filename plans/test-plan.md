@@ -76,6 +76,12 @@ Cross-cutting API tricks (run the interesting ones under each role):
   off-by-one leaking items across pages.
 - **`/private/` with session cookie:** probe a few plausible private routes with cookie auth.
 - **Cookie flags:** `ldso` missing HttpOnly/Secure is explicitly eligible.
+- **New-action PCE sweep:** for every action in the "Recently added actions" table in
+  `recon/app-features.md` (2025-09 → 2026-09): hit its endpoint with a role lacking the action
+  (stale preset roles + minimal custom roles). Also: custom-role **wildcard action injection**
+  (`*`, `update*` globs in `POST /custom-roles`), `bypassRequiredSegmentApproval` flow,
+  `revokeSessions` date edge, `viewSdkKey` gating on SDK Keys Beta list/get (key material in
+  response?), `updateAccessTokenExpiry` on other members' tokens.
 
 ## Phase 3 — XSS / SSRF in user input (focus area)
 
@@ -114,6 +120,7 @@ SSRF (must include proof of reach + metadata — use a **request-capturing endpo
 ## Phase 4 — Streamer & Events (focus: improper flag-data retrieval, event mechanism abuse)
 
 Setup: SDK key + mobile key + client-side ID from your org (UI → environment → SDK keys).
+Plus the two-environment (secure-mode on/off) setup from Phase 4a.
 
 Streamer (`stream.launchdarkly.com`, in scope; client routes on `clientstream.*` are out of scope
 but the same Go service likely handles them — test what's reachable on the in-scope host):
@@ -154,6 +161,98 @@ Events (`events.launchdarkly.com`):
 - **Diagnostic events**: what's sent for SDK key type errors (diagnostic event with key value?).
 - `events.launchdarkly.us`/EU: out of scope — skip active.
 
+## Phase 4a — Client-side oracle, secure mode, private attrs, views (H5–H7) ⭐
+
+Setup additions: create **two** environments in your org — `env-plain` (secure mode OFF) and
+`env-secure` (secure mode ON). Grab client-side IDs + (optionally) mobile keys for each.
+Details & documented baseline: `recon/sdk-docs.md`.
+
+**H5 — Client-side context evaluation oracle / secure mode bypasses (P1/P2 candidate if bypassed)**
+Documented: without secure mode, a public client-side ID can evaluate any context (disclosed,
+mitigate-by-config). With secure mode, unsigned-context evals must be rejected.
+1. `env-plain`: `GET https://app.launchdarkly.com/sdk/evalx/{clientId}/contexts/{b64url(context)}?withReasons=true`
+   with guessed/arbitrary context keys (in-scope host! polling fallback). Record: values returned,
+   reason kinds (`TARGET_MATCH`? `RULE_MATCH`+ruleId? `PREREQUISITE_FAILED`+prerequisiteKey?).
+   **The reasons are the reportable surface**, not the raw oracle.
+2. Same via streaming: `GET /eval/{clientId}/{b64url(context)}` on `clientstream.launchdarkly.com`
+   (out of scope — for comparison only) vs. whether the same client routes exist on
+   `stream.launchdarkly.com` (in scope) — error diffs.
+3. `env-secure`: no `h` → error? wrong `h` → error? `h` for context A, path context B → reject?
+4. **canonicalKey collisions** (hash is over canonicalKey only): multi-kind contexts, kind case
+   variants, unicode casefold, anonymous kind, extra attributes with same key, **permuted
+   multi-context kind order** — does one signed hash authorize a *different* context's
+   evaluation (attribute-level oracle)?
+5. **Route coverage of `h` enforcement**: poll, stream, ping, REPORT, bulk — all reject without it?
+6. **Credential mixing in secure-mode env**: client-side ID on `/msdk*`, mobile key on `/eval*`,
+   server SDK key in `Authorization` + `h` absent — expected rejections; anything 2xx = finding.
+7. `withReasons=true` with valid `h` — do reasons still expose ruleIds/prerequisiteKeys?
+   (Secure mode documents variation privacy; reasons = targeting structure.)
+
+**H6 — Private attribute leakage (privacy, P2/P3)**
+Mark attrs private (client SDK `privateAttributes`, incl. `/path/ptr` variants). Client SDK sends
+them for eval; server must not store/echo them. Check every surface:
+- `/evalx` + `withReasons` response, stream payload,
+- events accepted at `events.launchdarkly.com` (no echo expected, but check response + what's
+  stored: view via Contexts UI/API),
+- **REST API**: `GET context attribute names` / `attribute values`, `search-contexts`,
+  `search-context-instances`, `get-context-instances`, `evaluate-context-instance`, context detail
+  page's backing API — values under `_meta` in JSON?
+- audit log entries (context create/update bodies, comments),
+- legacy users endpoints (user flag settings / user search),
+- Live events / Data Export payloads if enabled.
+Fuzz privacy stripping: pointer `..`, `*`, ``, duplicate/conflicting paths, built-in attrs
+(`email`, `name`, `anonymizeKey`) marked private (docs say key/kind can't be private — test).
+
+**H7 — Views / filtered SDK payloads (beta; cross-key filter) (P2/P3)**
+- Create 2 SDK keys in env: key-F (filtered by view V), key-P (plain). Create view V with 1 flag.
+- key-F + `filter=<V>` → only V's resources (baseline).
+- key-P + `filter=<V>` → does an unfiltered key honor the param (over-filtering = bug, low) or
+  ignore it (expected)? key-F + `filter=<otherView>` → cross-view read (P3).
+- key-F's `filter` pointing at a view in **another project** (create 2 projects) → cross-project?
+- Views Beta API authz: `get-linked-resources`, `link-resource` with member role / project-scope
+  token — linking arbitrary resources (flags in other projects) via views?
+
+## Phase 4b — Event-driven tampering (H8–H9) ⭐ (focus: experimentation)
+
+Setup: experiment on a flag in `env-plain` (frequentist + Bayesian), guarded rollout if available,
+a flag with detailed tracking enabled.
+
+**H8 — Context creation/attribute tampering via `index`/`identify` events (P2/P3)**
+- `identify` with a NEW context key → creates context instance (documented). Fine.
+- `identify` with an EXISTING context key + **different attributes** → attributes overwritten?
+  (re-identify flow) If yes: targeted users' attributes can be mutated via events → targeting
+  changes for them (business logic + privacy). Check who's allowed (any client-side ID of the env?
+  mobile? server key of ANOTHER env in same project?).
+- `index` vs `identify` differences (kind, merge semantics, multi-kind).
+- Private attrs in identify payload (pair with H6).
+- Attribute volume/depth: 100KB attribute values, 1000 attrs, nested depth 50 — robustness
+  (note errors; no volume attacks).
+- Anonymous contexts: force anon via events? usage-counting manipulation (low).
+
+**H9 — Experimentation / guarded-rollout tampering via `feature`/`custom` events (P2 candidate)**
+- `feature` events for the experiment flag with: wrong `variation` index, `inExperiment` true on a
+  flag not in the experiment, iteration key of flag B on flag A, negative/`Number.MAX_VALUE`
+  metric values, wrong types, far-future/past `creationDate`, duplicate events (dedup key
+  behavior), custom event `data` with injection chars (reflected in analysis UI?).
+- Guarded rollouts: they "use [feature] events to monitor variation performance, detect
+  regressions" — craft regression-free events for a broken variation (bypass auto-block?) or
+  fake regressions for a good one (availability for the tenant — report as logic bug, don't
+  trigger destructive actions on other tenants' data — use own flags only).
+- Sample-size / experiment completion: can you make an experiment "complete" early / stall
+  forever via event volume? (own experiments only)
+- Holdouts: prerequisite-flag events required for holdouts — craft events to break holdout
+  assignment for your contexts (logic).
+- **Guarded rollouts (trial available on all accounts)** — mechanics in `recon/app-features.md`:
+  (a) min-context gate: N feature events from ONE context vs N distinct contexts — which advances
+  the rollout? (b) one extreme metric value triggering auto-rollback (trivially gameable
+  safety control), (c) offsetting values masking a real regression, (d) future-dated events
+  skipping step windows, (e) exclusivity rule (guarded rollout + experiment on same flag)
+  enforcement.
+- Traffic-assignment verification (server-side checks vs event claims): does the analysis
+  pipeline re-derive a context's variation from seed+key+bucket, or trust the `variation`/
+  `inExperiment` fields on incoming events? If trusted → H9's cross-variation events are the
+  finding (results integrity).
+
 ## Phase 5 — Business logic (contexts ⭐ & experimentation ⭐)
 
 Contexts (new user model, "1:1 replacement users → contexts" — replacement bugs are gold):
@@ -166,6 +265,15 @@ Contexts (new user model, "1:1 replacement users → contexts" — replacement b
 - **Bulk targeting** export/import: export = data egress (CSV excluded unless LD-specific —
   but *access control* on export is in scope); import: does it replace or merge? race with
   concurrent edit?
+- **Auto context-kind creation via SDK eval** (evalx/identify with novel kind): tenant project
+  mutation by a client-side ID — kind-name edge cases (case, unicode, reserved, `multi`,
+  empty, `/`, 512 chars), count limits.
+- **Multi-context canonicalKey** (feeds H5-4): permute kind order in `{kind:"multi",…}`, add
+  redundant kinds — same canonicalKey with different attribute surface?
+- **Context instance versions** (per-source-app/SDK records): same context identified via
+  server key + client ID → two versions; private-attr state leaking across versions (H6).
+- Kind archive/restore with live flags/segments/experiments referencing it (dangling refs, eval
+  behavior, restore race with concurrent eval).
 - **Context settings** (per-context overrides): override for context you don't own? expiry
   handling (expiring targets endpoints) — override past-dated expiries?
 - **Evaluate-context-instance** API: server-side eval returns values for any context you pass —
@@ -180,6 +288,13 @@ Experimentation (2022 refresh):
   targeting implies (e.g. record success events for the *other* variation)?
 - Sample size calculator (new in-app, 2026-09-01): client or server? If server-side, fuzz inputs.
 - Iteration creation while experiment running (mid-flight changes, baseline shifts).
+- Traffic-assignment logic per docs (`recon/app-features.md`): "Edit design" vs Stop+restart
+  reshuffle paths via API (patch-experiment vs create-iteration) — behavior matches docs?
+  allocation increase when untracked buckets insufficient (reshuffle off → error or silent
+  misallocation?), layer snapshot integrity after layer mutation, holdout/experiment
+  randomization-unit mismatch handling.
+- Seed exposure check: iteration seed absent from client payloads (client can't compute
+  assignments locally without it — pair with H5).
 
 ## Phase 6 — Odds & ends
 
@@ -209,7 +324,8 @@ Experimentation (2022 refresh):
    is tight on basics — differentiate with: version-pinning, semantic-patch, search scoping,
    contexts/eval endpoints).
 4. Phase 3 SSRF (webhooks + flag import) — program explicitly asks for SSRF with proof.
-5. Phase 4 streamer/events (program's explicit interest; less likely to be picked over).
+5. Phase 4a client-side oracle + secure mode (H5) — the program's explicit "flag info meant for
+   other users" ask — then 4b event tampering (H8/H9), then the rest of Phase 4 (streamer/events).
 6. Phase 5 business logic (focus areas = triage goodwill).
 7. Picking through Phase 6 while waiting on triage.
 
