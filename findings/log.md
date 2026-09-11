@@ -77,8 +77,29 @@ SDK routes on in-scope hosts, CORS+Origin, docs search reflection, app-host SDK 
   Remaining unread: per-language SDK references, full static action reference (strategy covers
   it), guides pages.
 
-**Next (needs researcher):**
-1. Run P0 batch from browser (all read-only).
-2. Create `zazieproductions@bugcrowdninja.com` account → token → `.env`.
-3. Proceed per `plans/test-plan.md` sequencing (P0 → account → Phase 2 IDOR + new-action PCE
-   sweep → Phase 3 SSRF → Phase 4a H5 oracle/secure-mode → 4b event/guarded-rollout tampering).
+## 2026-09-11 (cont. 3) — User provided a key; Session 1 sheet built
+
+- User pasted a key labeled "A.I agent general tasks API key" (`api-9fb3…` UUID format).
+  Format does NOT match LaunchDarkly credential formats (personal `lpat_…`, service tokens,
+  `sdk-`/`mob-` keys, alphanumeric client-side IDs). Stored in gitignored `.env` as
+  `PROVIDED_API_KEY` with a caveat; **awaiting user confirmation of what it is**.
+  (Also noted: LD docs mention tokens can authenticate the OTLP ingestion endpoint —
+  `otel.observability.app.launchdarkly.com` — new auth surface for later.)
+- Confirmed token model from `home/account/api`: personal vs service tokens, role/inline-policy
+  scoping, `showAll=true` on /tokens requires Admin.
+- Built **`plans/session-1-requests.md`** — exact copy-paste request sheet:
+  - Part A (unauth): announcements public endpoints (H4 read + flagged optional write),
+    caller-identity/ips, streamer route existence loop, app-host SDK fallback routes,
+    events no-op POST, CORS/Origin browser snippet (H1 read side), docs search reflection.
+  - Part B: account + Owner personal token + org inventory.
+  - Part C (auth baseline reads): caller-identity, `projects?expand=environments`
+    (**returns real sdk-/mob- key values + `secureMode` flag** — key-material & H5 goldmine),
+    context-kinds, sdk-keys (beta; full key values in response), tokens (last-4 check),
+    relay-auto-configs (**`fullKey` in list**), webhooks (**`secret` field documented in
+    list response**), experiments, auditlog (limit 1–20), announcements (auth vs unauth),
+    teams/custom-roles, and an `LD-API-Version: 20160426` pinned call.
+  - Exact paths verified against API reference pages (auditlog NOT audit-logs;
+    context-kinds under /projects/{key}/context-kinds; relay under /account/relay-auto-configs;
+    sdk-keys requires LD-API-Version: beta).
+- Next: user runs Part A (read-only) + Part B, sends responses (or token). Session 2 =
+  IDOR matrix + PCE sweep + H5.
