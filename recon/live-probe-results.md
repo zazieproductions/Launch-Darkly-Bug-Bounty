@@ -127,6 +127,56 @@ SSE endpoint that never sends an event without a valid SDK key). CI §2 records 
 headers for the whole streamer route set, which is what actually maps route existence there
 (`404` = no route, `401/400` = route + auth check).
 
+### O5 — `/internal/` answers UNAUTHENTICATED with a resource index, and its children share the account-ID gate ⭐⭐
+
+```
+GET https://app.launchdarkly.com/internal/            (no auth, no headers)
+→ {"_links":{"account":{"href":"/internal/account","type":"application/json"},
+             "actions":{"href":"/internal/actions","type":"application/json"},
+             "self":{"href":"/internal/","type":"application/json"}}}
+
+GET https://app.launchdarkly.com/internal/account        → {"code":"unauthorized","message":"Invalid account ID header"}
+GET https://app.launchdarkly.com/internal/actions        → {"code":"unauthorized","message":"Invalid account ID header"}
+GET https://app.launchdarkly.com/internal/announcements  → {"code":"unauthorized","message":"Invalid account ID header"}
+GET https://app.launchdarkly.com/internal/members        → HTML 404 "Lost in space" (no such route)
+GET https://app.launchdarkly.com/private/                → HTML 404 "Lost in space" (no such route)
+```
+
+Three things follow:
+
+1. **The `/internal/` API root is reachable with zero credentials** and happily describes itself.
+   The program states `/internal/` is "customer-facing … require[s] either a valid `ldso` session
+   cookie or an access token". The root index requires **neither**. That alone is an
+   unauthenticated-access observation on an in-scope API subroute (focus area: "Unauthenticated/
+   unauthorized access to APIs"), and it is the map for everything below it.
+2. **`/api/v2/announcements` is the same machinery as `/internal/announcements`** — identical
+   gate, identical error string. So "Invalid account ID header" is the **internal-API family's**
+   auth check, and the public `/api/v2/announcements` route is an internal-API endpoint exposed on
+   the public API path. That reframes H4: this is not "a public endpoint missing auth", it is
+   "an internal endpoint whose only credential is an account identifier supplied in a header".
+   → **If the header alone (no cookie, no token) authorizes the request, an attacker who can
+   supply or guess another account's ID reads that account's internal data.** That is the
+   cross-tenant/unauth finding; the account-ID error differential is also an enumeration oracle.
+3. **A reliable router fingerprint** for mapping the rest of the surface without credentials:
+   HTML "Lost in space" = no route at all; JSON `Invalid account ID header` = real gated internal
+   route; JSON `invalid access token` = real `/api/v2/` route; JSON `_links` index = route that
+   answers unauthenticated. CI §4/§4b applies this across ~50 candidate paths and classifies each.
+
+Note `/internal/actions` — combined with `AnnouncementAccessAllowedReason` (`actions[]`,
+`resources[]`, `effect`, `roleName`), an unauthenticated or header-only read of `/internal/actions`
+would disclose LD's **role-action vocabulary** as deployed (directly useful for the new-action PCE
+sweep in Phase 2, and a disclosure finding in its own right).
+
+### O6 — correct path for the public IP list
+
+`GET /api/v2/ips` → 404 HTML; the unauthenticated API root index (`GET /api/v2/`) shows the real
+href is **`/api/v2/public-ip-list`**, which returns the full egress CIDR list with no auth
+(expected/documented — not a finding). The root index is itself unauthenticated and lists
+`account`, `flag-statuses`, `flags`, `integrations`, `members`, `projects`, `public-ip-list`,
+`segments`, `tokens`, `webhooks` — worth remembering that **`GET /api/v2/` is an unauth'd
+route-discovery oracle** for the public API, and the reconstructed doc slugs in
+`recon/api-endpoints.md` need correcting against it (CI §6 produces the exact inventory).
+
 ## Probe coverage status
 
 | Probe | Via proxy (GET, no status) | Via CI (status + headers) |

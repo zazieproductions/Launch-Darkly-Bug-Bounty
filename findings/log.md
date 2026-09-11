@@ -213,3 +213,40 @@ Single unauth, read-only pass that writes into `ci-results/run-N/`:
 → H10 read-only confirmation, (b) if app-host poll routes return 200 for bogus IDs → start H5
 with a real client-side ID from the researcher's org, (c) build the IDOR matrix from the exact
 `openapi-paths.txt` inventory instead of reconstructed doc slugs.
+
+## 2026-09-11 (cont. 7) — O5: `/internal/` answers with NO credentials ⭐⭐
+
+Followed up O1 by probing the `/internal/` family directly (live, unauth, read-only):
+
+- `GET /internal/` → **200 JSON resource index** listing `/internal/account`, `/internal/actions`,
+  `self`. **No cookie, no token, no headers.** The program describes `/internal/` as requiring an
+  `ldso` cookie or access token — the root index requires neither.
+- `GET /internal/account`, `/internal/actions`, `/internal/announcements` → all
+  `{"code":"unauthorized","message":"Invalid account ID header"}` — the **same gate as
+  `/api/v2/announcements`** (O1). So `/api/v2/announcements` is an internal-API endpoint surfaced
+  on the public API path, and the "account ID header" is the internal API family's credential.
+- `GET /internal/members`, `GET /private/` → HTML "Lost in space" 404 (no route).
+
+Consequences recorded in `recon/live-probe-results.md` O5/O6:
+1. **H4 reframed** — not "public endpoint missing auth" but "internal endpoint whose only
+   credential is an account identifier in a header". If the header alone authorizes, an attacker
+   supplying/guessing another account's ID reads that account's internal data (cross-tenant), and
+   the valid-vs-invalid error differential is an **account enumeration oracle**. `/internal/actions`
+   would also disclose LD's deployed role-action vocabulary (feeds the Phase 2 PCE sweep).
+2. **Router fingerprint** established: HTML 404 = no route; `Invalid account ID header` = real
+   gated internal route; `invalid access token` = real `/api/v2/` route; `_links` index = answers
+   unauthenticated. CI §4/§4b now sweeps ~50 candidate paths and auto-classifies them.
+3. **O6**: `GET /api/v2/` is itself an unauthenticated route-discovery oracle; the public IP list
+   path is `/api/v2/public-ip-list` (not `/api/v2/ips` → that 404s). Reconstructed doc slugs in
+   `recon/api-endpoints.md` must be corrected against CI §6's exact inventory.
+
+Tooling: `tools/ci-route-matrix.sh` §5 now brute-forces 21 candidate header names × 2 dummy values
+× 4 endpoints (`/api/v2/announcements`, `/internal/account`, `/internal/actions`,
+`/internal/announcements`) + query-param variants, flags any response that differs from the
+baseline error, and dumps its headers/body to `header-probe-hits.txt`. §5b records the unauth
+`/internal/` index verbatim and follows every href it advertises. §7d added: ±240 chars around each
+`/internal/` reference in the app's JS bundles — that call site is where the frontend attaches the
+account header, so it should yield the header **name** directly.
+
+**Fastest unblock is still human:** one DevTools capture of any `/internal/*` or `/announcements`
+request's Request Headers (name + value of the account header) resolves H10 immediately.

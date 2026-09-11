@@ -70,43 +70,134 @@ probe "POST events/bulk []"     "$EVENTS/events/bulk"     -X POST -H 'Content-Ty
 
 echo | tee -a "$OUT/route-matrix.txt"
 echo "=== 4. app root subroutes incl. /internal/ and /private/ ===" | tee -a "$OUT/route-matrix.txt"
-for p in "" "api/v2" "api/v2/" "api/v2/openapi.json" "api/v2/ips" "api/v2/public-ips" "api/v2/caller-identity" \
+for p in "" "api/v2" "api/v2/" "api/v2/openapi.json" "api/v2/ips" "api/v2/public-ips" "api/v2/public-ip-list" \
+         "api/v2/caller-identity" \
          "api/v2/announcements" "api/v2/projects" "internal" "internal/" "api/v2/internal" \
-         "private" "private/" "api/v2/private" "private/announcements" "sdk" "msdk" "login" "signup"; do
+         "private" "private/" "api/v2/private" "private/announcements" "sdk" "msdk" "login" "signup" \
+         "internal/account" "internal/actions" "internal/announcements" "internal/members" \
+         "internal/projects" "internal/flags" "internal/roles" "internal/teams" "internal/users" \
+         "internal/context-kinds" "internal/experiments" "internal/search" "internal/auditlog" \
+         "internal/settings" "internal/subscription" "internal/billing" "internal/status" \
+         "internal/health" "internal/version" "internal/account/members" "internal/account/settings" \
+         "internal/account/announcements" "internal/actions/list" "internal/features" \
+         "internal/segments" "internal/environments" "internal/organizations" "internal/tokens"; do
   probe "GET /$p" "$LD/$p"
 done
 
+# Router fingerprint, confirmed live on 2026-09-11 (see recon/live-probe-results.md O5/O3):
+#   HTML "Lost in space" 404                        -> no such route (SPA front-controller fallthrough)
+#   {"code":"unauthorized","message":"Invalid account ID header"}
+#                                                   -> REAL internal route, gated by that header
+#   {"_links":{...}} with NO credentials            -> route answers unauthenticated (index)
 echo | tee -a "$OUT/route-matrix.txt"
-echo "=== 5. H4: /api/v2/announcements undocumented account-ID header probe ===" | tee -a "$OUT/route-matrix.txt"
-# Baseline (no header) returned: {"code":"unauthorized","message":"Invalid account ID header"}
-# Docs for getAnnouncementsPublic list ONLY Authorization + status/limit/offset, so this header
-# is undocumented. Brute-force plausible names with a dummy value; any response that differs
-# from the baseline error means we found the gate.
+echo "=== 4b. classify internal/private probes by response fingerprint ===" | tee -a "$OUT/route-matrix.txt"
+python3 - "$OUT/raw" <<'PY' | tee -a "$OUT/route-matrix.txt"
+import os, sys, re
+d = sys.argv[1]
+if os.path.isdir(d):
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith('.body'):
+            continue
+        label = fn[:-6]
+        if not re.search(r'(internal|private)', label, re.I):
+            continue
+        body = open(os.path.join(d, fn), errors='ignore').read()[:400]
+        if 'Invalid account ID header' in body:
+            kind = 'GATED internal route (account-ID header)'
+        elif 'Lost in space' in body:
+            kind = 'no-route (SPA 404)'
+        elif '"_links"' in body or '"links"' in body:
+            kind = '*** UNAUTH INDEX (answers with no creds) ***'
+        elif body.strip() == '':
+            kind = 'empty body'
+        elif 'invalid access token' in body:
+            kind = 'auth-required (API router)'
+        else:
+            kind = 'OTHER -> inspect'
+        print(f"  {label:56} {kind:44} {body.replace(chr(10),' ')[:110]}")
+PY
+
+echo | tee -a "$OUT/route-matrix.txt"
+echo "=== 5. H4/H10: undocumented account-ID header probe (announcements + /internal/*) ===" | tee -a "$OUT/route-matrix.txt"
+# Baselines observed live (unauth, no headers):
+#   GET /api/v2/announcements   -> {"code":"unauthorized","message":"Invalid account ID header"}
+#   GET /internal/              -> {"_links":{account, actions}}        <-- answers UNAUTHENTICATED
+#   GET /internal/account       -> {"code":"unauthorized","message":"Invalid account ID header"}
+#   GET /internal/actions       -> {"code":"unauthorized","message":"Invalid account ID header"}
+#   GET /internal/announcements -> {"code":"unauthorized","message":"Invalid account ID header"}
+#   GET /api/v2/caller-identity -> {"code":"unauthorized","message":"invalid access token"}  (normal path)
+# Docs for getAnnouncementsPublic list ONLY Authorization + status/limit/offset, and the generated
+# Java client sends no such header -> the header is server-enforced but absent from the public
+# contract. Brute-force plausible names; ANY body/status differing from the baseline error means
+# we found the gate. Read-only GETs only, 0.25s apart.
+BASELINE='Invalid account ID header'
 HEXID='5f0e3a1b2c3d4e5f6a7b8c9d'
 : > "$OUT/announcements-header-probe.txt"
-printf '%-34s %-24s %s  %s\n' HEADER VALUE CODE BODY | tee -a "$OUT/announcements-header-probe.txt"
-for h in \
-  'LD-Account-Id' 'LD-Account-ID' 'LD-ACCOUNT-ID' 'X-LD-Account-Id' 'X-Account-Id' 'Account-Id' \
-  'AccountId' 'X-LaunchDarkly-Account-Id' 'LD-Account' 'X-LD-Account' 'LD-Account-Key' \
-  'X-Account-Key' 'LD-Tenant-Id' 'X-Tenant-Id' 'LD-Organization-Id' 'X-Organization-Id' \
-  'LD-Team-Id' 'Account' 'X-Account' 'LD-Api-Account-Id' 'LD-App-Account-Id' ; do
-  for v in "$HEXID" 'testaccount'; do
-    f="$OUT/raw/ann_$(echo "${h}_${v}" | tr -c 'a-zA-Z0-9' '_').txt"
-    code=$(curl -sS -D "$f.hdr" -o "$f.body" -w '%{http_code}' --max-time 12 -A "$UA" \
-           -H "$h: $v" "$LD/api/v2/announcements" 2>/dev/null || echo ERR)
-    body=$(head -c 200 "$f.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
-    printf '%-34s %-24s %s  %s\n' "$h" "$v" "$code" "$body" | tee -a "$OUT/announcements-header-probe.txt"
-    sleep 0.3
+HITS="$OUT/header-probe-hits.txt"; : > "$HITS"
+for EP in "/api/v2/announcements" "/internal/account" "/internal/actions" "/internal/announcements"; do
+  echo "--- endpoint: GET $EP ---" | tee -a "$OUT/announcements-header-probe.txt"
+  printf '%-34s %-26s %-5s %s\n' HEADER VALUE CODE BODY | tee -a "$OUT/announcements-header-probe.txt"
+  for h in \
+    'LD-Account-Id' 'LD-Account-ID' 'LD-ACCOUNT-ID' 'X-LD-Account-Id' 'X-Account-Id' 'Account-Id' \
+    'AccountId' 'X-LaunchDarkly-Account-Id' 'LD-Account' 'X-LD-Account' 'LD-Account-Key' \
+    'X-Account-Key' 'LD-Tenant-Id' 'X-Tenant-Id' 'LD-Organization-Id' 'X-Organization-Id' \
+    'LD-Team-Id' 'Account' 'X-Account' 'LD-Api-Account-Id' 'LD-App-Account-Id' ; do
+    for v in "$HEXID" 'testaccount'; do
+      tag="$(echo "${EP}_${h}_${v}" | tr -c 'a-zA-Z0-9' '_')"
+      code=$(curl -sS -D "$OUT/raw/hp_$tag.hdr" -o "$OUT/raw/hp_$tag.body" -w '%{http_code}' \
+             --max-time 12 -A "$UA" -H "$h: $v" "$LD$EP" 2>/dev/null || echo ERR)
+      body=$(head -c 200 "$OUT/raw/hp_$tag.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
+      printf '%-34s %-26s %-5s %s\n' "$h" "$v" "$code" "$body" | tee -a "$OUT/announcements-header-probe.txt"
+      if ! grep -q "$BASELINE" "$OUT/raw/hp_$tag.body" 2>/dev/null; then
+        echo "*** DIFFERENT FROM BASELINE: GET $EP with '$h: $v' -> $code $body" | tee -a "$HITS"
+        echo "    response headers:" | tee -a "$HITS"
+        sed 's/^/      /' "$OUT/raw/hp_$tag.hdr" 2>/dev/null | head -20 | tee -a "$HITS"
+        echo "    full body (first 4k):" | tee -a "$HITS"
+        head -c 4096 "$OUT/raw/hp_$tag.body" 2>/dev/null | tee -a "$HITS"; echo | tee -a "$HITS"
+      fi
+      sleep 0.25
+    done
+  done
+  # query-param variants
+  for q in "accountId=$HEXID" "account=$HEXID" "LD-Account-Id=$HEXID" "accountKey=testaccount"; do
+    tag="$(echo "${EP}_q_$q" | tr -c 'a-zA-Z0-9' '_')"
+    code=$(curl -sS -D "$OUT/raw/hpq_$tag.hdr" -o "$OUT/raw/hpq_$tag.body" -w '%{http_code}' \
+           --max-time 12 -A "$UA" "$LD$EP?$q" 2>/dev/null || echo ERR)
+    body=$(head -c 200 "$OUT/raw/hpq_$tag.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
+    printf '%-34s %-26s %-5s %s\n' "QUERY ?$q" '-' "$code" "$body" | tee -a "$OUT/announcements-header-probe.txt"
+    grep -q "$BASELINE" "$OUT/raw/hpq_$tag.body" 2>/dev/null || \
+      echo "*** DIFFERENT FROM BASELINE: GET $EP?$q -> $code $body" | tee -a "$HITS"
   done
 done
-# and as query params
-for q in "accountId=$HEXID" "account=$HEXID" "LD-Account-Id=$HEXID" "accountKey=testaccount"; do
-  f="$OUT/raw/annq_$(echo "$q" | tr -c 'a-zA-Z0-9' '_').txt"
-  code=$(curl -sS -D "$f.hdr" -o "$f.body" -w '%{http_code}' --max-time 12 -A "$UA" \
-         "$LD/api/v2/announcements?$q" 2>/dev/null || echo ERR)
-  body=$(head -c 200 "$f.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
-  printf '%-34s %-24s %s  %s\n' "QUERY ?$q" '-' "$code" "$body" | tee -a "$OUT/announcements-header-probe.txt"
-done
+echo "header-probe hits: $(wc -l < "$HITS") lines (0 = no candidate header changed the response)" \
+  | tee -a "$OUT/route-matrix.txt"
+
+# 5b. what does /internal/ itself expose with no credentials at all? (observed: a links index)
+echo "--- /internal/ unauthenticated index (recorded verbatim) ---" | tee -a "$OUT/route-matrix.txt"
+curl -sS -D "$OUT/raw/internal_root.hdr" --max-time 12 -A "$UA" "$LD/internal/" \
+  -o "$OUT/raw/internal_root.body" 2>/dev/null || true
+cat "$OUT/raw/internal_root.hdr" 2>/dev/null | sed 's/^/  HDR /' | tee -a "$OUT/route-matrix.txt"
+echo "  BODY $(cat "$OUT/raw/internal_root.body" 2>/dev/null)" | tee -a "$OUT/route-matrix.txt"
+# follow every href the index advertises, still unauthenticated
+python3 - "$OUT/raw/internal_root.body" > "$OUT/internal_index_hrefs.txt" 2>/dev/null <<'PY'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+    links = d.get('_links') or d.get('links') or {}
+    for k, v in links.items():
+        h = v.get('href', '') if isinstance(v, dict) else ''
+        if h and h.rstrip('/') != '/internal':
+            print(h)
+except Exception:
+    pass
+PY
+while IFS= read -r href; do
+  [ -z "$href" ] && continue
+  tag=$(echo "$href" | tr -c 'a-zA-Z0-9' '_')
+  code=$(curl -sS -o "$OUT/raw/idx_$tag.body" -w '%{http_code}' --max-time 12 -A "$UA" "$LD$href" 2>/dev/null || echo ERR)
+  body=$(head -c 300 "$OUT/raw/idx_$tag.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
+  echo "  index-href $href -> $code  $body" | tee -a "$OUT/route-matrix.txt"
+done < "$OUT/internal_index_hrefs.txt"
 
 echo | tee -a "$OUT/route-matrix.txt"
 echo "=== 6. OpenAPI spec analysis (spec is public) ===" | tee -a "$OUT/route-matrix.txt"
@@ -243,6 +334,20 @@ if compgen -G "$OUT/bundles/*.js" > /dev/null; then
   grep -ohE '.{160}announcements.{160}' "$OUT"/bundles/*.js 2>/dev/null | head -12 \
     > "$OUT/bundle-announcements-context.txt" || true
   cat "$OUT/bundle-announcements-context.txt" | tee -a "$OUT/route-matrix.txt"
+
+  # 7d is the money grep: the frontend call site for /internal/* must attach the account-ID
+  # header, so ±240 chars around each reference should contain the header name.
+  echo "-- 7d. context around '/internal/' call sites (should reveal the account header) --" \
+    | tee -a "$OUT/route-matrix.txt"
+  grep -ohE '.{240}/internal/.{240}' "$OUT"/bundles/*.js 2>/dev/null | head -20 \
+    > "$OUT/bundle-internal-context.txt" || true
+  wc -l < "$OUT/bundle-internal-context.txt" | xargs echo "   snippets:" | tee -a "$OUT/route-matrix.txt"
+  head -c 6000 "$OUT/bundle-internal-context.txt" | tee -a "$OUT/route-matrix.txt"
+
+  echo "-- 7e. any literal header-ish names containing account/tenant/org (case-insensitive) --" \
+    | tee -a "$OUT/route-matrix.txt"
+  grep -ohiE '"[a-z0-9_-]*(account|tenant|organi[sz]ation)[a-z0-9_-]*"\s*:' "$OUT"/bundles/*.js 2>/dev/null \
+    | sort | uniq -c | sort -rn | head -30 | tee -a "$OUT/route-matrix.txt"
 fi
 
 # keep the committed result set small: raw/ bodies can be big
