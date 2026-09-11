@@ -1,0 +1,15 @@
+# SDK source clones (reference only, re-clone anytime)
+sdk/
+
+# Credentials — never commit tokens/cookies
+.env
+.env.*
+credentials*
+*.token
+cookies*
+
+# Scratch
+scratch/
+tmp/
+*.tmp
+.DS_Store
