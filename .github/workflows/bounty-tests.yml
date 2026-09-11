@@ -12,6 +12,9 @@ name: bounty-tests
 #   LD_TOKEN           - LaunchDarkly personal API token  (Part C authenticated reads)
 #   LD_LOGIN_EMAIL     - burner login email               (Part B ldso/session tests)
 #   LD_LOGIN_PASSWORD  - burner login password            (Part B ldso/session tests)
+#   LD_ACCOUNT_ID      - OUR OWN account id (24-hex)      (internal-API ld-account header test)
+#                       find it in /api/v2/caller-identity "_links.self.href" or any
+#                       /api/v2/account/{id}/... URL — never someone else's account id
 
 on:
   push:
@@ -44,6 +47,12 @@ jobs:
         env:
           CI_RESULTS_DIR: ${{ env.RESULTS }}
         run: bash tools/ci-route-matrix.sh
+
+      - name: Internal-API probe (GET only; auth-flow/mutating paths excluded by design)
+        env:
+          CI_RESULTS_DIR: ${{ env.RESULTS }}
+          LD_ACCOUNT_ID: ${{ secrets.LD_ACCOUNT_ID }}
+        run: bash tools/ci-internal-probe.sh
 
       - name: X - extra unauth recon (CORS echo, preflight, root probes)
         run: bash tools/ci-extra-unauth.sh

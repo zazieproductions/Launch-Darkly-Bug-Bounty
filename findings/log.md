@@ -250,3 +250,64 @@ account header, so it should yield the header **name** directly.
 
 **Fastest unblock is still human:** one DevTools capture of any `/internal/*` or `/announcements`
 request's Request Headers (name + value of the account header) resolves H10 immediately.
+
+## 2026-09-11 (cont. 8) — CI results are back: 142 internal endpoints + the account header
+
+**The commit-back channel works.** CI run 2 pushed `ci-results/run-2/` to this branch (logs and
+artifacts remain unreadable from the sandbox, so this is now the standard workflow).
+Full analysis → **`recon/internal-api-inventory.md`** (new). Highlights:
+
+1. **The account-ID header gates `/api/v2/` itself, not just announcements.**
+   Unauth `GET /api/v2/projects` → `401 {"code":"unauthorized","message":"Invalid account ID header"}`
+   — while `GET /api/v2/caller-identity` → `"invalid access token"`. Two different gates on the
+   public API. The whole 2.98 MB public OpenAPI spec contains exactly **one** header parameter
+   (`LD-API-Version`) and **zero** operations with empty `security`, so this header is entirely
+   outside the published contract.
+2. **Header name candidate found in LD's own bundles: `ld-account`.** Also
+   `ld-account-id-verification-for-salesforce`, `x-ld-project-id`, `x-ld-envid`,
+   **`ld-flag-override`**, **`ld-gonfalon-overrides`** (gonfalon = LD's internal flag system),
+   `ld-bypass-ua-tracking`, `ld-data-source`, `ld-observability`.
+   The 21-name × 2-dummy-value brute force changed nothing → the error doesn't distinguish
+   "unknown header" from "known header, bad value", so **the decisive test needs our real
+   account id** (`LD_ACCOUNT_ID` secret): `GET /api/v2/projects` + `GET /internal/account` with
+   `ld-account: <our id>` and **no token/cookie**. Outcomes: 200+data = unauth API access (P1/P2);
+   different error = enumeration oracle.
+3. **`/internal/` is live and unauthenticated at the root** (`200` + `_links` index), and
+   **142 `/internal/*` endpoints** were extracted from the bundles, including
+   `/internal/account/session/escalate`, `/internal/authorization/access-check/{service}/bulk`,
+   `/internal/role-presets-bundle`, `/internal/entitlements/{ai-configs,release-guardian}`,
+   `/internal/config/{anonymous,authenticated}`,
+   `/internal/unauthenticated-members/organization-verifications`,
+   `/internal/projects/{projKey}/datasets/{id}/{download,upload-url,rows}`,
+   `/internal/projects/{projKey}/assignment-data-sources/{key}/probe` (**SSRF candidate**),
+   `/internal/ai-configs/{configKey}/completion`,
+   `/internal/projects/{projectKey}/views/{viewKey}/application/evaluated-flags` (H7),
+   `/internal/projects/{projectKey}/flags/search` + `/compare` (ES scoping).
+   **`/private/` appears 0 times in the bundles** and 404s at the edge → it is not the SPA's API.
+4. **35 `/api/v2/` paths the app uses that are NOT in the public spec** — top targets:
+   `/api/v2/projects/{x}/randomization-settings` (experiment seed/allocation — focus area),
+   `/api/v2/chart/data` + `/api/v2/list/data` (generic query endpoints → scoping/injection),
+   `/api/v2/destinations/**/{setup,complete-setup}` + `/test-event` (**SSRF with proof-of-reach**),
+   `/api/v2/integration-manifests/{x}/dynamic-options/{x}`, `/api/v2/projects/{x}/flag-statuses/queries`,
+   `/api/v2/projects/{x}/shortcuts`. Slack/integration ones deprioritized (3rd-party = out of scope).
+5. **Real status codes for the in-scope SDK hosts:**
+   - `stream.launchdarkly.com`: `/all` 401, **`/mping` 401, `/meval/{ctx}` 401** (mobile stream
+     routes ARE on the in-scope host), client `/eval/{id}/{ctx}` 404 (lives on clientstream.*),
+     Go-style `404 page not found` for unmatched routes.
+   - `events.launchdarkly.com`: all paths 404/0B (key is in the path → needs our keys), `/` → 499.
+   - `app.launchdarkly.com` poll routes: **context is base64-decoded and JSON-parsed BEFORE the
+     client-side ID is validated** (400 `couldn't parse user JSON: missing field 'key'` precedes
+     401). Legacy `/sdk/evalx/{id}/users/{key}` still routes. Invalid IDs → clean 401, no leak.
+     → H5 needs a real client-side ID/mobile key from our env, not unauth probing.
+6. **Static-asset trick (no login):** the app shell exposes
+   `data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"` +
+   `data-manifest-name="manifest.422453b0d.json"` + `data-bundle="unauthenticated"`. The public
+   manifest lists every chunk, so the **authenticated** app code is downloadable without
+   credentials. Implemented as CI §8 (downloads up to 60 chunks, re-runs all extraction greps,
+   prints the `ld-account` / `gonfalon` / `flag-override` call sites verbatim).
+
+**Safety:** `tools/ci-internal-probe.sh` is GET-only and its header comment lists the paths
+excluded by design — all login/signup/invite/reset/MFA/password/card/session-mutation and
+contact-us routes (they email real people or mutate accounts), plus anything with side effects
+(`bulk-version-update`, `/cancel`, `/probe`, `/upload-url`, `/completion`) which are reserved for
+authenticated own-tenant testing. Unauth announcement writes stay permanently disabled (cont. 6).

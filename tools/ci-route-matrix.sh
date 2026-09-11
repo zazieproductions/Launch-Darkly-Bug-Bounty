@@ -348,10 +348,103 @@ if compgen -G "$OUT/bundles/*.js" > /dev/null; then
     | tee -a "$OUT/route-matrix.txt"
   grep -ohiE '"[a-z0-9_-]*(account|tenant|organi[sz]ation)[a-z0-9_-]*"\s*:' "$OUT"/bundles/*.js 2>/dev/null \
     | sort | uniq -c | sort -rn | head -30 | tee -a "$OUT/route-matrix.txt"
+
+  # 7f: how the internal headers/endpoints are wired. Bundles are deleted at the end of this
+  # script, so the extracted context has to be captured HERE (ci-internal-probe.sh reads it back).
+  echo "-- 7f. context around internal header names + sensitive internal routes --" \
+    | tee -a "$OUT/route-matrix.txt"
+  for needle in 'ld-account' 'gonfalon' 'flag-override' 'access-check' 'session/escalate' \
+                'x-ld-envid' 'x-ld-project-id' 'organization-verifications' 'role-presets-bundle' \
+                'entitlements' 'config/anonymous' 'upload-url' 'assignment-data-sources'; do
+    tag=$(echo "$needle" | tr -c 'a-zA-Z0-9' '_')
+    grep -ohE ".{220}${needle}.{220}" "$OUT"/bundles/*.js 2>/dev/null | head -4 \
+      > "$OUT/bundle-ctx-$tag.txt" || true
+    n=$(wc -l < "$OUT/bundle-ctx-$tag.txt" 2>/dev/null | tr -d ' ')
+    echo "   '$needle' -> $n snippet(s)" | tee -a "$OUT/route-matrix.txt"
+  done
+fi
+
+echo | tee -a "$OUT/route-matrix.txt"
+echo "=== 8. full bundle mining via the PUBLIC asset manifest (no login needed) ===" | tee -a "$OUT/route-matrix.txt"
+# The app shell advertises data-static-asset-path + data-manifest-name and data-bundle="unauthenticated",
+# which implies other named bundles. The manifest lists every chunk filename, so the *authenticated*
+# app's code is downloadable from the public CDN without credentials. Static asset GETs only.
+ASSET_PATH=$(grep -ohE 'data-static-asset-path="[^"]+"' "$OUT"/bundles/page_*.html 2>/dev/null | head -1 | sed 's/.*="//; s/"//')
+MANIFEST=$(grep -ohE 'data-manifest-name="[^"]+"' "$OUT"/bundles/page_*.html 2>/dev/null | head -1 | sed 's/.*="//; s/"//')
+echo "  asset path: ${ASSET_PATH:-<none>}   manifest: ${MANIFEST:-<none>}" | tee -a "$OUT/route-matrix.txt"
+if [ -n "${ASSET_PATH:-}" ] && [ -n "${MANIFEST:-}" ]; then
+  curl -sS --compressed --max-time 30 "${ASSET_PATH%/}/$MANIFEST" -o "$OUT/asset-manifest.json" \
+    -w '  manifest: code=%{http_code} size=%{size_download}\n' 2>/dev/null || true
+  if [ -s "$OUT/asset-manifest.json" ]; then
+    python3 - "$OUT/asset-manifest.json" "$ASSET_PATH" <<'PY' > "$OUT/manifest-urls.txt"
+import json, re, sys
+raw = open(sys.argv[1], errors='ignore').read()
+base = sys.argv[2].rstrip('/')
+try:
+    d = json.loads(raw)
+    vals = []
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values(): walk(v)
+        elif isinstance(o, list):
+            for v in o: walk(v)
+        elif isinstance(o, str):
+            vals.append(o)
+    walk(d)
+except Exception:
+    vals = re.findall(r'"([^"]+)"', raw)
+seen, out = set(), []
+for v in vals:
+    v = v.lstrip('/')
+    if re.search(r'\.(js|mjs)$', v) and v not in seen:
+        seen.add(v)
+        out.append(f"{base}/{v}")
+print('\n'.join(out[:60]))
+PY
+    echo "  manifest chunk URLs: $(wc -l < "$OUT/manifest-urls.txt")" | tee -a "$OUT/route-matrix.txt"
+    n=0
+    while IFS= read -r u; do
+      [ -z "$u" ] && continue
+      n=$((n+1)); [ "$n" -gt 60 ] && break
+      f="$OUT/bundles/mf_$(echo "$u" | sed 's#.*/##; s#[^a-zA-Z0-9._-]#_#g')"
+      [ -f "$f" ] && continue
+      curl -sS --compressed --max-time 45 --max-filesize 60000000 "$u" -o "$f" 2>/dev/null || true
+    done < "$OUT/manifest-urls.txt"
+    echo "  chunks downloaded: $(ls "$OUT"/bundles/mf_* 2>/dev/null | wc -l), total $(du -sh "$OUT/bundles" 2>/dev/null | cut -f1)" \
+      | tee -a "$OUT/route-matrix.txt"
+
+    # re-run every extraction over the now-complete bundle set (overwrites the §7 outputs)
+    grep -ohE '["'"'"'`]/(internal|private|api/v2)/[A-Za-z0-9_./{}$:-]{1,90}["'"'"'`]' "$OUT"/bundles/*.js 2>/dev/null \
+      | tr -d "\"'\`" | sort -u > "$OUT/bundle-api-paths.txt" || true
+    grep -ohiE '"(x-|ld-)[a-z0-9-]{2,40}"' "$OUT"/bundles/*.js 2>/dev/null | tr 'A-Z' 'a-z' \
+      | sort | uniq -c | sort -rn | head -60 > "$OUT/bundle-custom-headers.txt" || true
+    grep -ohiE '[a-z0-9-]*(account|tenant|organization)[a-z0-9-]*(id|key)[a-z0-9-]*' "$OUT"/bundles/*.js 2>/dev/null \
+      | sort | uniq -c | sort -rn | head -50 > "$OUT/bundle-account-strings.txt" || true
+    for needle in 'ld-account' 'gonfalon' 'flag-override' 'access-check' 'session/escalate' \
+                  'x-ld-envid' 'x-ld-project-id' 'organization-verifications' 'role-presets-bundle' \
+                  'entitlements' 'config/anonymous' 'upload-url' 'assignment-data-sources' \
+                  'randomization-settings' 'chart/data' 'list/data' 'test-event' 'dynamic-options'; do
+      tag=$(echo "$needle" | tr -c 'a-zA-Z0-9' '_')
+      grep -ohE ".{220}${needle}.{220}" "$OUT"/bundles/*.js 2>/dev/null | head -6 \
+        > "$OUT/bundle-ctx-$tag.txt" || true
+    done
+    echo "  total /internal/ paths now known: $(grep -cE '^/internal/' "$OUT/bundle-api-paths.txt")" \
+      | tee -a "$OUT/route-matrix.txt"
+    echo "  total /api/v2/ paths now known:   $(grep -cE '^/api/v2/' "$OUT/bundle-api-paths.txt")" \
+      | tee -a "$OUT/route-matrix.txt"
+    # the money grep, printed inline so it lands in the committed route-matrix.txt too
+    echo "-- 8b. how 'ld-account' is used (verbatim snippets) --" | tee -a "$OUT/route-matrix.txt"
+    head -c 5000 "$OUT/bundle-ctx-ld-account.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+    echo | tee -a "$OUT/route-matrix.txt"
+    echo "-- 8c. gonfalon / flag-override snippets --" | tee -a "$OUT/route-matrix.txt"
+    head -c 3000 "$OUT/bundle-ctx-gonfalon.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+    head -c 3000 "$OUT/bundle-ctx-flag-override.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+  fi
 fi
 
 # keep the committed result set small: raw/ bodies can be big
 du -sh "$OUT" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+find "$OUT" -maxdepth 1 -name 'asset-manifest.json' -size +256k -delete 2>/dev/null || true
 find "$OUT/raw" -type f -size +64k -delete 2>/dev/null || true
 rm -f "$OUT/openapi.json" 2>/dev/null || true   # 1.5MB, regenerable; keep derived text only
 rm -rf "$OUT/bundles" 2>/dev/null || true        # huge; keep only extracted greps
