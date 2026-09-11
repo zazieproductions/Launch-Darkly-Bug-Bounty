@@ -54,6 +54,18 @@ jobs:
           LD_ACCOUNT_ID: ${{ secrets.LD_ACCOUNT_ID }}
         run: bash tools/ci-internal-probe.sh
 
+      - name: F-002 live check - canonicalKey collision vs published secure-mode hash
+        env:
+          CI_RESULTS_DIR: ${{ env.RESULTS }}
+        run: bash tools/ci-securemode-collision.sh
+
+      - name: F-002 local PoC - canonicalKey collisions in the real SDK code
+        run: |
+          [ -d sdk/node-server-sdk ] || git clone --depth 1 -q https://github.com/launchdarkly/node-server-sdk sdk/node-server-sdk
+          node tools/poc-canonicalkey-collision.js "$RESULTS/F-002-poc"
+          [ -d sdk/python-server-sdk ] || git clone --depth 1 -q https://github.com/launchdarkly/python-server-sdk sdk/python-server-sdk
+          python3 tools/poc-canonicalkey-collision.py "$RESULTS/F-002-poc"
+
       - name: X - extra unauth recon (CORS echo, preflight, root probes)
         run: bash tools/ci-extra-unauth.sh
 

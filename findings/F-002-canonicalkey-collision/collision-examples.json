@@ -1,0 +1,236 @@
+{
+ "headline": {
+  "A": {
+   "kind": "user",
+   "key": "org:o1:user:u1"
+  },
+  "B": {
+   "kind": "multi",
+   "org": {
+    "key": "o1"
+   },
+   "user": {
+    "key": "u1"
+   }
+  },
+  "canonicalKey": "org:o1:user:u1"
+ },
+ "systematic": [
+  {
+   "canonicalKey": "org:u1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:u1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "u1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:o1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:o1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "o1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:d1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:d1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "d1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:s1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:s1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "s1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:alice:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:alice:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "alice"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:acme:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:acme:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "acme"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:user:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:user:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "user"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "org:org:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "org:org:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "org": {
+      "key": "org"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "organization:u1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "organization:u1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "organization": {
+      "key": "u1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "organization:o1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "organization:o1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "organization": {
+      "key": "o1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "organization:d1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "organization:d1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "organization": {
+      "key": "d1"
+     }
+    }
+   ]
+  },
+  {
+   "canonicalKey": "organization:s1:user:u1",
+   "contexts": [
+    {
+     "kind": "user",
+     "key": "organization:s1:user:u1"
+    },
+    {
+     "kind": "multi",
+     "user": {
+      "key": "u1"
+     },
+     "organization": {
+      "key": "s1"
+     }
+    }
+   ]
+  }
+ ]
+}

