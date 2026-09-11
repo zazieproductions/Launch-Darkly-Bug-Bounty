@@ -356,3 +356,85 @@ authenticated own-tenant testing. Unauth announcement writes stay permanently di
   `static.launchdarkly.com` with no login; `/api/v2/` path knowledge grew 190 → **204** paths
   (internal paths stayed at 142). Manifest name rotates per deploy
   (`422453b0d` → `6d75a3b61`), so scripts read it from the shell each run.
+
+## 2026-09-11 (cont. 10) — SDK source deep-dive → F-002: `canonicalKey` is not injective ⭐⭐⭐
+- Cloned `js-core`, `node-server-sdk` (v7.0.4, standalone JS), `react-client-sdk` (3.9.4 →
+  `launchdarkly-js-client-sdk` → js-core), `go-server-sdk`, `python-server-sdk`, `ruby-server-sdk`,
+  `go-sdk-common`. (`java-sdk`/`dotnet-sdk` names 404; not needed.)
+- **F-002:** `canonicalKey` / `fully_qualified_key` percent-escapes `:`→`%3A` and `%`→`%25` for every
+  kind **except `user`**, which returns the key raw. So `{kind:"user",key:"org:o1:user:u1"}` and
+  `{kind:"multi",org:{key:"o1"},user:{key:"u1"}}` share canonicalKey `org:o1:user:u1` → **identical
+  secure-mode HMAC** → a hash issued for one context validates for the other.
+  Verified in 4 implementations (js-core, node-server-sdk v7, python-server-sdk, go-sdk-common — the
+  Go comment states it is the *specification*), 0 disagreements over 5880 generated contexts,
+  **2688 colliding pairs**. Executable PoCs run the REAL SDK code:
+  `tools/poc-canonicalkey-collision.js` and `.py` (the Python one loads the real `Context` class via
+  importlib — `ldclient/context.py` is stdlib-only, no pip/network needed).
+- Same root cause, two more impacts: browser flag-cache storage key =
+  `base64(sha256(canonicalKey))` (`namespaceForContextData` in `sdk-client/src/storage/namespaceUtils.ts`)
+  → cross-context cache collision; `ContextDeduplicator` / `event_processor.getCacheKey` LRU keyed on
+  canonicalKey → suppressed index/identify events (experimentation denominators).
+- Secondary vector (`:` inside a **kind**) also collides in JS but is **closed**: kind names are
+  validated (`_INVALID_KIND_REGEX = [^-a-zA-Z0-9._]` → "context kind contains disallowed characters").
+- Wrote `findings/F-002-canonicalkey-collision.md` (P3 claim, CVSS 6.8, explicit `AC:H` caveat about
+  the backend having to sign an attacker-influenced key) and `tools/ci-securemode-collision.sh`: an
+  **account-free** live check that reuses LD's own published dogfood `clientSideId` +
+  `secureModeContextHash` from `/internal/config/anonymous` and asks the in-scope app host whether that
+  hash validates for the colliding context shape (≤9 GETs, bodies truncated to 400 B so LD's flag
+  values are never committed, decision table baked into the script). Queued as CI run 5.
+
+## 2026-09-11 (cont. 11) — CI run 4 + F-003: js-core private-attribute redaction bug ⭐⭐⭐
+- **Header mystery CLOSED (negatively), run 4 §9:** only `Authorization: Bearer <dummy>` changes the
+  response on `/api/v2/*` (`{"code":"invalid_token","message":"invalid access token"}` instead of
+  `Invalid account ID header`) → Bearer routes into the token-auth branch. Every other dummy (raw
+  value, `ldso=`-shaped in Authorization / Cookie / both, `LD-API-Version: beta`) is byte-identical to
+  baseline on `/api/v2/*` and `/internal/*`. The account-ID header name is not recoverable without a
+  real session. **Do not re-brute-force.**
+- **Run 4 §8 correction:** "attacker-supplied cookie/param changed the signed context key? True" is a
+  **false positive** — the dogfood context key is a fresh random UUID on every request (the two lines
+  above it say exactly that), so "changed" only reflects per-request randomness. The secure-mode
+  signing oracle stays CLOSED.
+- **Run 4 §10:** `/internal/plans` = full commercial catalogue (startup $79 / team $299 / growth $699,
+  ids, `_limits`, `enforceSeatLimits:false` on all three).
+- **`allClientSideFlags` = 2339 names + evaluated values** for LD's own prod dogfood env, served to
+  anonymous visitors; 221 auth/security-relevant. Notables: `enable-google-oauth-email-verified-check
+  =false`, `enforce-saml-conditions-validity-window=false`, `enable-bypass-approval-requirements-
+  enforcement=true`, `enable-bypass-required-approval=true`, `enable-segment-bypass-approvals=true`,
+  `zz-fairytale-bypass-test=true`, `disable-legacy-access-token-auth-fallback=false`,
+  `mfa-enforcement=false`, `enable-o-auth-dcr=true`, `enable-internal-authorization-endpoint=true`,
+  password policy (8 chars / 3 classes / 1 per class), internal quota limits, GitHub+Google OAuth
+  client ids, and **one customer account id** `5d25ea5f23d2f65d48fa0c9c`
+  (`integration-approvals-poll-after-approval-accounts`) — recorded as disclosed data only, **not**
+  used in any request/header per the no-other-user-data rule. Negatives: `sandboxVisitor*` are empty
+  strings (no free identity), `useMockOAuthValidators=false`, `isSandbox=false`, `isManagedInstance=false`.
+- **F-001 updated** with a new section carrying all of the above; claim stays P4.
+- **`plans/auth-posture-leads.md` created** (L1 Google OAuth email_verified · L2 SAML validity window ·
+  L3 approval bypass · L4 access-check confused deputy + credentials-in-query · L5 legacy token
+  fallback · L6 OAuth DCR · L7 auth-flow endpoint list, excluded from probing). Bundle evidence for L4:
+  `POST /internal/authorization/access-check/{service}/bulk` with
+  `params:{path, header}` where the caller passes `header:{Authorization: document.cookie}` and
+  `service:"gonfalon"` → credentials as a query parameter (CWE-598) unless `ldso` is HttpOnly
+  (unknowable without logging in), plus a caller-chosen target service. GET on that route → 405.
+  Stated rule: no lead becomes a finding without an executable PoC or an observed server response.
+- **F-003 (new, CONFIRMED):** `js-core/packages/shared/common/src/AttributeReference.ts:18`
+  `return ref.indexOf('~') ? ref.replace(/~1/g,'/').replace(/~0/g,'~') : ref;` — an **index used as a
+  boolean**, so a path component whose first char is `~` is never unescaped. Private attributes named
+  `/ssn`, `~secret`, nested `profile./ssn` etc. are therefore **never redacted**, and
+  `_meta.redactedAttributes` doesn't list them → silent. node-server-sdk v7 (`indexOf('~') >= 0`),
+  python-server-sdk (unconditional `replace`), ruby-server-sdk (`include? '~'`) and go-sdk-common
+  (`strings.Contains`) are all correct → isolated js-core regression affecting every SDK built on it
+  (browser/react/vue/angular/node-client/react-native + `shared/sdk-server` edge SDKs).
+  Proof runs **real code both sides**: js-core's actual `.ts` executed through Node 22 type-stripping
+  (only its type-only import line swapped for a local alias) vs node-server-sdk v7's actual
+  `attribute_reference.js` + `context_filter.js` end to end → js-core leaked **3/4**, node redacted
+  **4/4**. Secondary in the same file: `validate()` uses char class `[^0|^1]` (literal `|` and `^`), so
+  invalid escapes like `/a~|b` are accepted by both JS SDKs while Go/Ruby/Python reject them.
+  `tools/poc-private-attr-unescape.mjs` → `findings/F-003-private-attr-unescape/`.
+- **Toolchain unlock:** Node 22.22.3 type-stripping executes js-core's real TypeScript with no npm and
+  no network (only GitHub is reachable). Standard approach from now on; caveat: files using TS
+  *parameter properties* (e.g. `ContextFilter.ts`) are not strippable and need a mechanical desugar or
+  a verbatim transcription.
+- Bundle greps also settled two older questions: the internal request wrapper injects only
+  `LD-API-Version` (`(0,o.K)().GET("/internal/…",{params, headers: {"LD-API-Version":e}})`) — no
+  account header — and `x-ld-envid` / `x-ld-project-id` are **response** headers consumed by
+  `initMetadataFromHeaders` (SDK env metadata), not request headers.

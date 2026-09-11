@@ -174,6 +174,60 @@ usable against `/internal/billingv2/plans/{planType}/limits`. Included here rath
 report per the program's "one vulnerability per report / same issue across endpoints = duplicate"
 rule.
 
+## Additional disclosed material (CI run 4, `ci-results/run-4/`) — raises the value of this report
+
+The same unauthenticated response also carries `allClientSideFlags`: **2339 flag names together with
+their evaluated values** for LaunchDarkly's own production dogfooding environment, as evaluated for an
+anonymous visitor (`internal-config-anonymous.json`, names list in `…json.flagnames.txt`). 221 of them
+concern authentication, authorization, approvals or token handling. Examples, verbatim:
+
+| disclosed flag | value | why an attacker cares |
+|---|---|---|
+| `enable-google-oauth-email-verified-check` | `false` | Google OAuth sign-up is enabled (`enable-google-oauth-sign-up=true`) while the email-verified check is off → unverified-email account linking (tracked as a separate lead, needs an account to test) |
+| `enforce-saml-conditions-validity-window` | `false` | SAML `NotBefore`/`NotOnOrAfter` conditions not enforced → assertion-replay class of attack |
+| `enable-bypass-approval-requirements-enforcement` / `enable-bypass-required-approval` / `enable-segment-bypass-approvals` | `true` | release-guardrail bypass paths are live in production |
+| `snippets-bulk-update-skip-pending-approval` | `true` | bulk update skips pending approvals |
+| `disable-legacy-access-token-auth-fallback` | `false` | legacy token-auth fallback still accepted (consistent with the `invalid access token` code path observed on `/api/v2/*`) |
+| `mfa-enforcement` / `enforce-mfa-for-basic-auth` | `false` | MFA not enforced platform-wide |
+| `enable-internal-authorization-endpoint` | `true` | the `/internal/authorization/*` surface is live |
+| `enable-o-auth-dcr` / `enable-o-auth-dcr` | `true` | OAuth dynamic client registration enabled |
+| `enable-ip-allowlist` / `…-session-auth` / `…-scoped-auth` | `false` | IP allowlisting controls not enabled for this env |
+| `zz-fairytale-bypass-test` | `true` | an internal bypass test flag left enabled in production |
+
+Also disclosed: internal limits (`access-token-list-max-limit=1000`,
+`internal-environment-query-limit=50`, `evals-token-limits-max-per-member=10000000`,
+`max-sdk-key-associations-per-view=250`, `fdcore-redis-write-token-cap=10`,
+`playground-trial-daily-token-limit=10000`), the account **password policy**
+(`minPasswordLength=8`, `passwordMinClasses=3`, `passwordMinCharsPerClass=1`,
+`prevent-commonly-used-passwords=true`), OAuth/third-party identifiers
+(`githubOauthClientId=Iv23liYrVNRkiyt0YvFX`, `googleOauthClientId=1069747104247-…`,
+`stripePublishableKey`, `segmentWriteKey`, `hockeystackApiKey`, `canduClientToken`, `docsAlgolia*`,
+`newRelic*`, `datadog*`, `intercomFinApp*`, `googleCaptchaSiteKey`, `slackAppId`, `courier*`,
+`observabilityProjectID=1jdkoe52`), and **one specific customer account id** in
+`integration-approvals-poll-after-approval-accounts=["5d25ea5f23d2f65d48fa0c9c"]`.
+
+> That account id is recorded here purely as disclosed data. In line with the program rule against
+> touching other users' data, it was **not** used in any request, header value or access attempt.
+
+Sibling unauthenticated endpoint `GET /internal/plans` (200, 1236 B) adds the full commercial plan
+catalogue: `startup` $79/mo (`558b29ee922f08271400000a`, mau 10 000), `team` $299/mo
+(`558b29de8a25dc272000000d`, mau 25 000), `growth` $699/mo (`58a3a1358ff1540922d62480`, mau 50 000),
+each with `_limits` booleans (`teams`, `customRoles`, `abTesting`, `auditLog`,
+`multipleProjects`/`multipleEnvironments`) and `enforceSeatLimits=false` on all three.
+
+**Negative results (checked, nothing to escalate):** `sandboxVisitorAccountID`,
+`sandboxVisitorMemberID`, `sandboxVisitorBaseUri` are empty strings (no free visitor identity);
+`useMockOAuthValidators=false`; `isManagedInstance=false`; `isSandbox=false`; `disallowSignups=false`.
+The `secureModeContextHash`/`dogfoodContext` pair is re-signed with a fresh random UUID per request,
+so it yields no oracle (see "Escalation path" above).
+
+**Net effect on this report:** the endpoint does not merely leak internal toggles — it publishes the
+live authentication/authorization posture of `app.launchdarkly.com`, its internal quota limits, its
+password policy, its commercial plan economics and one customer account id, to any unauthenticated
+client. The claim remains **P4 information disclosure** (no direct compromise demonstrated here); the
+individual posture items above are tracked as separate leads in `plans/auth-posture-leads.md` and will
+only be reported if independently verified.
+
 ## Evidence
 
 - `ci-results/run-*/internal-config-anonymous.json` — full response body (CI-captured)
