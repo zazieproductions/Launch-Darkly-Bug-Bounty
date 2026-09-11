@@ -1,0 +1,11 @@
+{
+ "clientSideId": "5866f3891cd8810a42ce5281",
+ "hash": "5ed5f4f85d44a9edeefc5899df6a8bdf95a97c068bd42741d86c2010880f44b5",
+ "canonicalKey": "session:d1e4e954-6090-4c8f-b770-a0a7ae7c18cb:user:d1e4e954-6090-4c8f-b770-a0a7ae7c18cb",
+ "urls": {
+  "orig": "https://app.launchdarkly.com/sdk/evalx/5866f3891cd8810a42ce5281/contexts/eyJraW5kIjoibXVsdGkiLCJzZXNzaW9uIjp7ImtleSI6ImQxZTRlOTU0LTYwOTAtNGM4Zi1iNzcwLWEwYTdhZTdjMThjYiIsImFub255bW91cyI6dHJ1ZX0sInVzZXIiOnsia2V5IjoiZDFlNGU5NTQtNjA5MC00YzhmLWI3NzAtYTBhN2FlN2MxOGNiIiwibmFtZSI6IiIsImRvZ2Zvb2RDYW5hcnkiOmZhbHNlLCJhbm9ueW1vdXMiOnRydWV9fQ",
+  "collision": "https://app.launchdarkly.com/sdk/evalx/5866f3891cd8810a42ce5281/contexts/eyJraW5kIjoidXNlciIsImtleSI6InNlc3Npb246ZDFlNGU5NTQtNjA5MC00YzhmLWI3NzAtYTBhN2FlN2MxOGNiOnVzZXI6ZDFlNGU5NTQtNjA5MC00YzhmLWI3NzAtYTBhN2FlN2MxOGNiIn0",
+  "control": "https://app.launchdarkly.com/sdk/evalx/5866f3891cd8810a42ce5281/contexts/eyJraW5kIjoidXNlciIsImtleSI6ImJ1Z2Nyb3dkLWNvbnRyb2wtbm90LXNpZ25lZC0wMDAxIn0",
+  "attrchanged": "https://app.launchdarkly.com/sdk/evalx/5866f3891cd8810a42ce5281/contexts/eyJraW5kIjoibXVsdGkiLCJzZXNzaW9uIjp7ImtleSI6ImQxZTRlOTU0LTYwOTAtNGM4Zi1iNzcwLWEwYTdhZTdjMThjYiIsImFub255bW91cyI6dHJ1ZX0sInVzZXIiOnsia2V5IjoiZDFlNGU5NTQtNjA5MC00YzhmLWI3NzAtYTBhN2FlN2MxOGNiIiwibmFtZSI6IiIsImRvZ2Zvb2RDYW5hcnkiOnRydWUsImFub255bW91cyI6dHJ1ZX19"
+ }
+}
