@@ -113,6 +113,7 @@ req() { # req <label> <url> [extra args]
          --max-time 20 -A "$UA" "$@" "$url" 2>/dev/null || echo ERR)
   size=$(wc -c < "$OUT/raw3/$tag.body" 2>/dev/null | tr -d ' ')
   body=$(head -c 160 "$OUT/raw3/$tag.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
+  LASTCODE="$code"
   printf '%-28s %-4s %8sB  %s\n' "$label" "$code" "$size" "$body" | tee -a "$RES"
   # do NOT keep full payloads: truncate the stored body so LD's flag values aren't committed
   head -c 400 "$OUT/raw3/$tag.body" > "$OUT/raw3/$tag.body.trunc" 2>/dev/null && mv "$OUT/raw3/$tag.body.trunc" "$OUT/raw3/$tag.body"
@@ -121,13 +122,34 @@ req() { # req <label> <url> [extra args]
 
 echo | tee -a "$RES"
 echo "--- requests (client-side eval route on the in-scope app host) ---" | tee -a "$RES"
-for name in orig collision control attrchanged; do
-  U=$(python3 -c "import json;print(json.load(open('$PLAN'))['urls']['$name'])")
-  req "$name (with h)"    "$U?h=$HASH"
-done
-# secure-mode enforcement controls
 U_ORIG=$(python3 -c "import json;print(json.load(open('$PLAN'))['urls']['orig'])")
 U_COLL=$(python3 -c "import json;print(json.load(open('$PLAN'))['urls']['collision'])")
+U_CTRL=$(python3 -c "import json;print(json.load(open('$PLAN'))['urls']['control'])")
+U_ATTR=$(python3 -c "import json;print(json.load(open('$PLAN'))['urls']['attrchanged'])")
+
+# BASELINE FIRST: if the signed context with its own valid hash is not accepted by this route, the
+# experiment cannot conclude anything, so stop after two requests instead of firing all eight.
+req "orig (with h) BASELINE" "$U_ORIG?h=$HASH"
+BASELINE="$LASTCODE"
+if [ "$BASELINE" != "200" ]; then
+  req "orig (NO h)" "$U_ORIG"   # one extra request, to characterise the route's behaviour
+  echo | tee -a "$RES"
+  echo "  BASELINE FAILED ($BASELINE) — the published dogfood client-side ID is not served by" | tee -a "$RES"
+  echo "  app.launchdarkly.com/sdk/evalx/. A 401 with a 0-byte body is the same response this route" | tee -a "$RES"
+  echo "  gives for a client-side ID it does not know (see ci-results/run-2 route matrix), and the" | tee -a "$RES"
+  echo "  dogfood config points its own SDK at relay-fdv2-prod.ld.catamorphic.com, which is" | tee -a "$RES"
+  echo "  OUT OF SCOPE and is not contacted by this script." | tee -a "$RES"
+  echo "  ==> INCONCLUSIVE. No claim is made about server-side secure-mode validation either way." | tee -a "$RES"
+  echo "      The definitive test runs on OUR OWN environment: tools/ci-authenticated-phase.sh §H" | tee -a "$RES"
+  echo "      (reads our own clientSideId + SDK key with our own token, computes both HMACs locally," | tee -a "$RES"
+  echo "      probes the colliding context). Requires the LD_TOKEN secret." | tee -a "$RES"
+  echo "done -> $RES" | tee -a "$RES"
+  exit 0
+fi
+req "collision (with h)"  "$U_COLL?h=$HASH"
+req "control (with h)"    "$U_CTRL?h=$HASH"
+req "attrchanged (with h)" "$U_ATTR?h=$HASH"
+# secure-mode enforcement controls
 req "orig (NO h)"         "$U_ORIG"
 req "collision (NO h)"    "$U_COLL"
 req "collision (bad h)"   "$U_COLL?h=0000000000000000000000000000000000000000000000000000000000000000"

@@ -1,6 +1,6 @@
 # F-002 — Context `canonicalKey` is not injective: a secure-mode hash signed for one context validates for a *different* context
 
-- **Status:** DRAFT — SDK-level flaw **confirmed by executable PoC in two SDKs** and by source in two more. Server-side confirmation is running in CI (`tools/ci-securemode-collision.sh`, see §7). Do not submit until that result is in.
+- **Status:** SDK-level flaw **CONFIRMED by executable PoC against the real, unmodified SDK code** (`node-server-sdk`, `python-server-sdk`; plus `js-core` and `go-sdk-common` by source). The *server-side* leg was attempted unauthenticated (CI run 7) and came back **INCONCLUSIVE** — see §7: the baseline probe was rejected because LaunchDarkly's published dogfooding client-side ID is served by an out-of-scope relay, not by the app-host eval route. The definitive server-side test is §H of `tools/ci-authenticated-phase.sh`, run against **our own** environment once `LD_TOKEN` exists. **Do not submit the server-side claim until that runs.**
 - **Affected components (all `-sdk` repos, i.e. in the program's SDK scope):**
   - `launchdarkly/python-server-sdk` — `ldclient/context.py` (`_escape_key_for_fully_qualified_key`, `Context.__init__`)
   - `launchdarkly/node-server-sdk` — `context.js` (`encodeKey`, `getCanonicalKey`)
@@ -204,6 +204,13 @@ triage completeness, not as separate reports.
 * If triage views the required backend-signing precondition as reducing impact rather than
   likelihood, the fallback rating is **P4**. The defect is nevertheless in LaunchDarkly's own
   published specification and every SDK that implements it, and the fix is small (see §8).
+* **Contingency, stated plainly:** the P3 rating depends on the service verifying `h` with the same
+  non-injective canonical key (§7 result is inconclusive so far). If §H shows the service distinguishes
+  the two context shapes, the secure-mode claim collapses and what remains is still a real defect but
+  rated lower — the client-side flag-cache collision (§5a), the defeated context-binding guard in
+  `FlagUpdater.upsert` (§5a2) and the event-deduplication collision (§5b), which are P4/P5-class
+  integrity issues that do not depend on server behaviour at all. The report should be filed only after
+  §H has run, with the rating adjusted to whichever branch is true.
 
 ## 7. Server-side verification (in flight)
 
@@ -231,6 +238,41 @@ Decision rule baked into the script:
 
 Safety: in-scope host only, LaunchDarkly's own dogfood environment only, read-only, tiny volume, no
 other customer's tenant touched.
+
+### Result — CI run 7 (`ci-results/run-7/securemode-collision.txt`): INCONCLUSIVE
+
+```
+canonicalKey(signed multi-context)      : session:fac2c19b-…:user:fac2c19b-…
+canonicalKey(colliding single-kind user): session:fac2c19b-…:user:fac2c19b-…
+COLLISION (local)                       : True
+
+orig (with h) BASELINE   401   0B      <-- the signed context with its OWN valid hash
+collision (with h)       401   0B
+control (with h)         401   0B
+orig (NO h)              401   0B
+```
+
+The **baseline failed**, so nothing can be concluded in either direction: the route never accepted the
+context it was given a valid signature for. `401` with a `0`-byte body is exactly what this route
+returns for a client-side ID it does not know (`ci-results/run-2/route-matrix.txt`:
+`GET /sdk/evalx/thisidshouldnotexist/contexts/{valid ctx}` → `401 0B`), and the same config response
+points LaunchDarkly's own SDK at `relay-fdv2-prod.ld.catamorphic.com` — a host that is **out of scope**
+and is **not** contacted by this script. In other words: the dogfooding environment's flags are not
+served by `app.launchdarkly.com/sdk/evalx/`, so this route cannot be used to test their hash
+validation without an account.
+
+The script was then changed to fail fast (baseline first, two requests instead of eight) and to report
+`INCONCLUSIVE` rather than a false negative; the earlier version's "NOT VULNERABLE server-side" line
+was an artefact of checking only the collision probe, and is withdrawn.
+
+**What still stands:** the SDK-level defect is proven with executable PoCs (§3) against four
+implementations, including the two that LaunchDarkly ships and supports today, and it is documented in
+`go-sdk-common` as the *specification*. What is unproven is whether the service's own `h` verification
+reproduces the same non-injective canonical key. §H of `tools/ci-authenticated-phase.sh` settles it on
+our own tenant: it reads our own environment's `clientSideId` and SDK key with our own token, computes
+`h(A)` and `h(B)` locally, and probes A+h(A), **B+h(A)** (the collision), C+h(A) (control), and A/B
+without `h`. Secure mode must be enabled on that environment (UI toggle, or
+`LD_ALLOW_ENV_PATCH=true`). The SDK key is held in memory only and never written to an artifact.
 
 ## 8. Suggested remediation
 

@@ -438,3 +438,46 @@ authenticated own-tenant testing. Unauth announcement writes stay permanently di
   `LD-API-Version` (`(0,o.K)().GET("/internal/…",{params, headers: {"LD-API-Version":e}})`) — no
   account header — and `x-ld-envid` / `x-ld-project-id` are **response** headers consumed by
   `initMetadataFromHeaders` (SDK env metadata), not request headers.
+
+## 2026-09-11 (cont. 12) — CI runs 6/7 results, two decisions from the researcher, authenticated harness built
+- **Decision (researcher): unauthenticated probing stays strictly GET-only.** The three POST-only
+  `/internal/` endpoints (`access-check/{service}/bulk`, `projects/{p}/flags/search`,
+  `unauthenticated-members/organization-verifications`) are NOT probed without credentials; they move
+  to the authenticated phase. Recorded in `plans/auth-posture-leads.md` L4 and enforced in
+  `tools/ci-authenticated-phase.sh` (org-verifications stays excluded even there — its name suggests it
+  creates state; opt-in `LD_ALLOW_ORG_VERIFICATION`).
+- **Decision (researcher): next priority = prepare authenticated testing.** Built
+  `tools/ci-authenticated-phase.sh` + `plans/account-setup-runbook.md`. The harness is **inert** without
+  the `LD_TOKEN` secret (verified: prints SKIPPED, exit 0). Sections: A identity/account resolution ·
+  B the account-ID-header question with a REAL value (9 candidate header names against
+  `/internal/account`) · C own-tenant read-only inventory · D cross-project + scoped-token authz matrix
+  (needs `LD_TOKEN_SCOPED`; the cleanest privilege test that never touches another customer) ·
+  E enumeration oracle (nonexistent vs random-valid 24-hex ids) · F the two read-only POSTs ·
+  G H11 `config/authenticated?project=&environment=` authz · **H the definitive F-002 test on our own
+  env** (reads our own `clientSideId`+`apiKey` with our own token, computes both HMACs in memory,
+  probes A+h(A) / **B+h(A)** / C+h(A) / no-h) · I SSRF-capable endpoints only with `LD_SSRF_CAPTOR`
+  (program requires captor metadata) · J login path left manual on purpose (no password in CI).
+  Opt-in switches all default false: `LD_ALLOW_RESOURCE_CREATION`, `LD_ALLOW_ENV_PATCH`,
+  `LD_ALLOW_LOGIN`, `LD_ALLOW_ORG_VERIFICATION`. Redaction sweep over every artifact before commit;
+  SDK key never written out.
+- **CI run 6/7: F-003 PoC reproduced in CI** (`ci-results/run-7/F-003-poc/poc-output.txt`) — identical
+  result to local: js-core leaks 3/4 private attributes, node-server-sdk v7 redacts 4/4.
+- **CI run 7: F-002 live check = INCONCLUSIVE (and my first reading of it was wrong).** All probes
+  returned `401 0B`, *including the baseline* (`orig` with its own valid `secureModeContextHash`). A
+  401/0B is what `/sdk/evalx/{id}/contexts/…` returns for a client-side ID it does not know (run-2
+  route matrix: bogus id → `401 0B`), and the same config response points LD's own SDK at
+  `relay-fdv2-prod.ld.catamorphic.com` — out of scope, never contacted. So the dogfood env's flags are
+  not served by the app-host eval route and this experiment cannot reach a verdict either way.
+  The script's interpretation logic had concluded "NOT VULNERABLE server-side" by checking only the
+  collision probe; that line is **withdrawn**. Script now fails fast (baseline first → 2 requests
+  instead of 8) and prints INCONCLUSIVE with the reason.
+- **F-002 report updated accordingly:** status says the server-side leg is unproven; §7 carries the
+  run-7 table and the withdrawal; §6 adds an explicit contingency — if §H shows the service
+  distinguishes the shapes, the secure-mode claim collapses and what remains is the client-side
+  flag-cache collision, the defeated `FlagUpdater.upsert` context-binding guard (also keyed on
+  `canonicalKey`, added to §5a2) and the event-dedup collision, i.e. P4/P5-class integrity issues.
+  F-002 is therefore **not filed yet**; F-003 is ready to file.
+- **Git note:** CI pushes `ci-results/` back to this branch, so `git pull --rebase` before every push is
+  mandatory; two conflicts appeared (workflow + F-002 report) and were resolved by taking my versions —
+  verified first with `diff` that upstream had no content mine lacked (CI never edits `findings/` or the
+  workflow).
