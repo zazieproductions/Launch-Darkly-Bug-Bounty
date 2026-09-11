@@ -1,0 +1,17 @@
+HTTP/2 405 
+allow: PATCH
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-xss-protection: 1
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 23:40:26 GMT
+via: 1.1 varnish
+x-served-by: cache-phx1710035-PHX
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789170026.320381,VS0,VE62
+vary: Accept-Encoding, Origin
+age: 0
+content-length: 0
+

@@ -1,0 +1,18 @@
+HTTP/2 301 
+content-type: text/html; charset=utf-8
+location: /api/v2/
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-xss-protection: 1
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 23:36:36 GMT
+via: 1.1 varnish
+x-served-by: cache-hhr-khhr2060043-HHR
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789169796.324982,VS0,VE216
+vary: Accept-Encoding
+age: 0
+content-length: 43
+
