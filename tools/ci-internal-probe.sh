@@ -255,6 +255,67 @@ if isinstance(a, dict):
             print(f"  --> confidential-roadmap phrase {needle!r}: {n} occurrence(s)")
 PY
 
+echo | tee -a "$RES"
+echo "=== 9. what IS the 'account ID header'? Authorization/Cookie variant matrix (dummy values only) ===" | tee -a "$RES"
+# Bundle evidence (ci-results/run-3/bundle-ctx-gonfalon_.txt): the internal access-check runner
+# builds its request with  header:{Authorization: document.cookie}  — i.e. the internal API is fed
+# the raw cookie string in Authorization. Hypothesis: "Invalid account ID header" is what the
+# gateway says when it cannot resolve an account from that header, NOT a separate custom header.
+# All values below are dummies; no real session material is ever sent.
+for EP in "/internal/account" "/api/v2/projects" "/api/v2/announcements" "/internal/config/authenticated"; do
+  for spec in \
+    'AUTH|ldso=bugcrowddummyvalue' \
+    'AUTH|bugcrowddummyvalue' \
+    'AUTH|Bearer bugcrowddummyvalue' \
+    'AUTH|api-00000000-0000-0000-0000-000000000000' \
+    'COOKIE|ldso=bugcrowddummyvalue' \
+    'AUTHCOOKIE|ldso=bugcrowddummyvalue' \
+    'VER|beta' ; do
+    kind="${spec%%|*}"; val="${spec#*|}"
+    args=()
+    case "$kind" in
+      AUTH)     args=(-H "Authorization: $val") ;;
+      COOKIE)   args=(-H "Cookie: $val") ;;
+      AUTHCOOKIE) args=(-H "Authorization: $val" -H "Cookie: $val") ;;
+      VER)      args=(-H "LD-API-Version: $val") ;;
+    esac
+    tag="$(echo "${EP}_${kind}_${val}" | tr -c 'a-zA-Z0-9' '_')"
+    code=$(curl -sS -D "$OUT/raw2/authvar_$tag.hdr" -o "$OUT/raw2/authvar_$tag.body" -w '%{http_code}' \
+           --max-time 12 -A "$UA" "${args[@]}" "$LD$EP" 2>/dev/null || echo ERR)
+    body=$(head -c 250 "$OUT/raw2/authvar_$tag.body" 2>/dev/null | tr -d '\r' | tr '\n' ' ')
+    printf '%-42s %-9s %-34s %-4s %s\n' "$EP" "$kind" "$val" "$code" "$body" | tee -a "$RES"
+    if ! grep -q 'Invalid account ID header' "$OUT/raw2/authvar_$tag.body" 2>/dev/null; then
+      echo "*** AUTH-VARIANT DIFFERS FROM BASELINE: $EP [$kind: $val] -> $code $body" | tee -a "$HITS"
+      sed 's/^/    HDR /' "$OUT/raw2/authvar_$tag.hdr" 2>/dev/null | head -15 | tee -a "$HITS"
+      head -c 2048 "$OUT/raw2/authvar_$tag.body" 2>/dev/null | tee -a "$HITS"; echo | tee -a "$HITS"
+    fi
+    sleep 0.2
+  done
+done
+
+echo | tee -a "$RES"
+echo "=== 10. /internal/plans + plan detail (unauthenticated commercial config) ===" | tee -a "$RES"
+curl -sS --compressed --max-time 20 -A "$UA" "$LD/internal/plans" -o "$OUT/internal-plans.json" 2>/dev/null || true
+python3 - "$OUT/internal-plans.json" <<'PY' | tee -a "$RES"
+import json, sys
+try:
+    d = json.load(open(sys.argv[1], errors='ignore'))
+except Exception as e:
+    print("  <unavailable>", e); raise SystemExit
+items = d.get('items', []) if isinstance(d, dict) else []
+print(f"  {len(items)} plans disclosed unauthenticated:")
+for p in items:
+    lim = p.get('_limits') or {}
+    link = ((p.get('_links') or {}).get('self') or {}).get('href', '')
+    print(f"    {p.get('name','?'):14} v{p.get('version')}  ${ (p.get('monthlyPrice') or 0)/100:>9,.2f}/mo"
+          f"  id={link.rsplit('/',1)[-1]:26} mau={lim.get('mauLimit')}"
+          f" seats_enforced={lim.get('enforceSeatLimits')} customRoles={lim.get('customRoles')}"
+          f" teams={lim.get('teams')} abTesting={lim.get('abTesting')} auditLog={lim.get('auditLog')}")
+    extra = {k: v for k, v in p.items() if k not in ('name','version','monthlyPrice','_limits','_links')}
+    if extra:
+        print(f"        other fields: {sorted(extra)[:18]}")
+PY
+
 # keep the full config (public data, no customer secrets) but bound everything else
 cp "$CFG" "$OUT/internal-config-anonymous-fetch1.json" 2>/dev/null || true
 find "$OUT/raw2" -type f -size +256k -delete 2>/dev/null || true

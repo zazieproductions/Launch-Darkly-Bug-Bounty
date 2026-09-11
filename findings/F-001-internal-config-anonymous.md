@@ -127,21 +127,52 @@ visitors" from "internal only".
    **Observed:** internal ticket IDs, unreleased roadmap/dates, federal pipeline internals, a signup
    country blocklist, marketing form IDs, internal dogfood hosts, and a secure-mode HMAC.
 
-## Escalation path (in progress — will be appended before submission)
+## Escalation path — TESTED, NEGATIVE RESULT (recorded for honesty; severity stays P4)
 
-`tools/ci-internal-probe.sh` §8 runs three unauthenticated fetches and diffs them:
-1. fetch #1 vs fetch #2 → is `dogfoodContext.session.key` / `secureModeContextHash` **stable** or
-   regenerated per request?
-2. fetch #3 supplies `Cookie: ld_anonymous_id=bugcrowd-test-0001; sandboxVisitorAccountId=…` and
-   `?contextKey=bugcrowd-test-0002` → does the **signed context change to attacker-chosen input**?
-   (Cookie/parameter names taken from strings in LD's own bundles: `sandboxVisitorAccountId`.)
-3. If yes → the endpoint signs arbitrary contexts with the dogfood environment's SDK key ⇒
-   secure-mode bypass primitive; severity becomes **P3 (C:H on that environment's flag privacy)**,
-   and the same code path in customer environments would be **P2**. Testing would stop at
-   proof-of-signature — no attempt to read another tenant's data.
+The `secureModeContextHash` question was tested before writing this up, because if the signed
+context were attacker-influenced it would be a secure-mode bypass primitive (P2/P3), not mere
+information disclosure.
 
-Note: `ld.catamorphic.com` (the dogfood relay/events hosts) is **not** in scope and has **not** been
-contacted — it is reported as disclosed data only.
+**Result: no oracle.** Across 10+ unauthenticated requests (CI run 3, plus header/cookie/query
+variants `ld-flag-override`, `ld-gonfalon-overrides`, `ld-bypass-ua-tracking`, `ld-data-source`,
+`ld-observability`, `x-ld-project-id`, `x-ld-envid`,
+`ld-account-id-verification-for-salesforce`, and
+`Cookie: ld_anonymous_id=…; sandboxVisitorAccountId=…` + `?contextKey=…`) the
+`dogfoodContext.session.key` / `dogfoodContext.user.key` was a **fresh random UUID on every single
+response** (`9e7a154f-…`, `b662b740-…`, `54729c2a-…`, `e4ba84ff-…`, `29aa6282-…`, `5bc3f603-…`,
+`6dcec5e5-…`, `bd63d5b3-…`, `1a69f701-…`, `24fa129a-…`), and the hash changed with it. The server
+generates and signs its own anonymous context per request; nothing supplied by the caller moved it.
+
+Also checked and closed: `ld-flag-override` and `ld-gonfalon-overrides` are **not** server headers —
+in LD's bundle they are a `localStorage` namespace for the SDK's `FlagOverridePlugin`
+(`storageNamespace ?? "ld-flag-override"`) and the internal name of the app itself
+(`serviceName: "gonfalon-web"` / `application.id: "gonfalon-frontend"`). Supplying them as request
+headers produced byte-identical behaviour to the baseline. Likewise `ld-account` is a
+**localStorage key prefix** (`ld-account-${accountId}`, with a migration path from a legacy global
+`ld-account` key), not the "account ID header" from the 401 message.
+
+So this report claims **information disclosure only (P4)**.
+
+Note: `ld.catamorphic.com`, `ld-stg.launchdarkly.com` and the other internal hosts named in the
+bundles were **never contacted** — they are reported as disclosed data only.
+
+## Related (same root cause, same unauthenticated surface)
+
+`GET /internal/plans` also answers **200 with no credentials**, returning LD's commercial plan
+objects including internal plan IDs, `monthlyPrice` in cents, and the full `_limits` entitlement map:
+
+```
+startup  v1   $79.00/mo  id=558b29ee922f08271400000a  mau=10000  teams=false customRoles=false enforceSeatLimits=false
+team     v1  $299.00/mo  id=558b29de8a25dc272000000d  mau=25000  teams=true  customRoles=false enforceSeatLimits=false
+growth   v2  $699.00/mo  id=58a3a1358ff1540922d62480  mau=50000  teams=true  customRoles=false enforceSeatLimits=false
+```
+
+Pricing itself is public, so this is only supporting evidence that `/internal/*` serves
+non-public configuration to anonymous callers — the internal plan `_id`s and the
+`enforceSeatLimits`/`mauLimit` entitlement flags are the non-public part, and the IDs are directly
+usable against `/internal/billingv2/plans/{planType}/limits`. Included here rather than as a second
+report per the program's "one vulnerability per report / same issue across endpoints = duplicate"
+rule.
 
 ## Evidence
 

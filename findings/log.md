@@ -311,3 +311,48 @@ excluded by design — all login/signup/invite/reset/MFA/password/card/session-m
 contact-us routes (they email real people or mutate accounts), plus anything with side effects
 (`bulk-version-update`, `/cancel`, `/probe`, `/upload-url`, `/completion`) which are reserved for
 authenticated own-tenant testing. Unauth announcement writes stay permanently disabled (cont. 6).
+
+## 2026-09-11 (cont. 9) — CI run 3 results: unauth `/internal/config/anonymous` + `/internal/plans`; F-001 drafted
+
+**First reportable finding drafted:** `findings/F-001-internal-config-anonymous.md`.
+
+- `GET /internal/config/anonymous` → **200 with no credentials**: LD's own dogfood config +
+  `allClientSideFlags` whose values contain internal ticket IDs (`LAUNC-2510`, `LAUNC-2486/7`,
+  `MTRX-2082/3/4`), unreleased-roadmap text ("Q3 2026 target, not yet built", "Not planned"),
+  federal pipeline internals ("Federal runs legacy Airflow…", "foundation commit e2c2f04"),
+  `pql-signup-junk-country-list: [EG,ID,VN,PK,BD,NP,MA,NG,DZ,KE]`, Marketo form IDs + field maps,
+  internal hosts (`relay-fdv2-prod.ld.catamorphic.com`, `events.ld.catamorphic.com`), limits
+  (`evals-token-limits-max-per-member: 10000000`, `ai-tools-bulk-update-max-targets: 50`), and a
+  `secureModeContextHash`. Sibling `/internal/config/authenticated` **is** gated
+  (`Invalid account ID header`), so the route is deliberately anonymous → the claim is about the
+  sensitivity of the published values, framed as P4 with an honest "may be called by-design" note.
+- **Escalation path tested and CLOSED (negative result, recorded):** the signed `dogfoodContext`
+  key is a **fresh random UUID on every response** (10+ samples), and none of
+  `ld-flag-override`/`ld-gonfalon-overrides`/`ld-bypass-ua-tracking`/`ld-data-source`/
+  `ld-observability`/`x-ld-project-id`/`x-ld-envid`/`ld-account-id-verification-for-salesforce`
+  headers or `ld_anonymous_id`/`sandboxVisitorAccountId` cookies or `?contextKey=` moved it.
+  → no secure-mode signing oracle. Severity stays P4.
+- **Also unauthenticated: `GET /internal/plans` → 200** with internal plan `_id`s, prices in cents
+  and the `_limits` entitlement map (`enforceSeatLimits`, `mauLimit`, `customRoles`, `teams`).
+  Folded into F-001 as same-root-cause evidence (one-vuln-per-report rule).
+- **Header mystery resolved (negatively):** bundle analysis shows `ld-account` is a **localStorage
+  namespace** (`ld-account-${accountId}`, with migration from a legacy global key) and
+  `ld-account-id-verification-for-salesforce` / `ld-flag-override` are **flag names / plugin
+  storage**, not headers. `gonfalon` is the app's internal name (`serviceName: "gonfalon-web"`).
+  The 21-name × 4-endpoint brute force produced **zero** deltas (`header-probe-hits.txt` empty).
+- **New lead from the bundles:** the internal access-check runner builds requests with
+  `header:{Authorization: document.cookie}` → the "account ID header" is probably the
+  **Authorization header carrying the raw cookie string**. CI §9 (new) sends dummy
+  `Authorization: ldso=…` / token-shaped / `Cookie:` / both, to 4 gated routes and flags any
+  error-text change. No real session material is ever sent.
+- **New lead:** `/internal/config/authenticated` is built by the SPA as
+  `new URL("/internal/config/authenticated", location.href)` + `?project=&environment=` taken from
+  the current URL → **H11** (does the server authz-check those params?). Added with H12–H20 as
+  **Phase 7** in `plans/test-plan.md` (access-check oracle, datasets `upload-url`/`download`,
+  `assignment-data-sources/{key}/probe` = SSRF, flags/search + compare, `role-presets-bundle`
+  → PCE targeting, entitlement gates, `session/escalate`, views `evaluated-flags`,
+  `ai-configs/{key}/completion`).
+- **Manifest mining worked:** `data-manifest-name` → 60 chunks / 9.4 MB pulled from
+  `static.launchdarkly.com` with no login; `/api/v2/` path knowledge grew 190 → **204** paths
+  (internal paths stayed at 142). Manifest name rotates per deploy
+  (`422453b0d` → `6d75a3b61`), so scripts read it from the shell each run.

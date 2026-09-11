@@ -355,7 +355,8 @@ if compgen -G "$OUT/bundles/*.js" > /dev/null; then
     | tee -a "$OUT/route-matrix.txt"
   for needle in 'ld-account' 'gonfalon' 'flag-override' 'access-check' 'session/escalate' \
                 'x-ld-envid' 'x-ld-project-id' 'organization-verifications' 'role-presets-bundle' \
-                'entitlements' 'config/anonymous' 'upload-url' 'assignment-data-sources'; do
+                'entitlements' 'config/anonymous' 'upload-url' 'assignment-data-sources' \
+                'LD-API-Version' 'document.cookie' 'config/authenticated'; do
     tag=$(echo "$needle" | tr -c 'a-zA-Z0-9' '_')
     grep -ohE ".{220}${needle}.{220}" "$OUT"/bundles/*.js 2>/dev/null | head -4 \
       > "$OUT/bundle-ctx-$tag.txt" || true
@@ -423,7 +424,8 @@ PY
     for needle in 'ld-account' 'gonfalon' 'flag-override' 'access-check' 'session/escalate' \
                   'x-ld-envid' 'x-ld-project-id' 'organization-verifications' 'role-presets-bundle' \
                   'entitlements' 'config/anonymous' 'upload-url' 'assignment-data-sources' \
-                  'randomization-settings' 'chart/data' 'list/data' 'test-event' 'dynamic-options'; do
+                  'randomization-settings' 'chart/data' 'list/data' 'test-event' 'dynamic-options' \
+                  'LD-API-Version' 'document.cookie' 'config/authenticated' 'AccountLocalStorage'; do
       tag=$(echo "$needle" | tr -c 'a-zA-Z0-9' '_')
       grep -ohE ".{220}${needle}.{220}" "$OUT"/bundles/*.js 2>/dev/null | head -6 \
         > "$OUT/bundle-ctx-$tag.txt" || true
@@ -434,11 +436,11 @@ PY
       | tee -a "$OUT/route-matrix.txt"
     # the money grep, printed inline so it lands in the committed route-matrix.txt too
     echo "-- 8b. how 'ld-account' is used (verbatim snippets) --" | tee -a "$OUT/route-matrix.txt"
-    head -c 5000 "$OUT/bundle-ctx-ld-account.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+    head -c 5000 "$OUT/bundle-ctx-ld_account_.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
     echo | tee -a "$OUT/route-matrix.txt"
     echo "-- 8c. gonfalon / flag-override snippets --" | tee -a "$OUT/route-matrix.txt"
-    head -c 3000 "$OUT/bundle-ctx-gonfalon.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
-    head -c 3000 "$OUT/bundle-ctx-flag-override.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+    head -c 3000 "$OUT/bundle-ctx-gonfalon_.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
+    head -c 3000 "$OUT/bundle-ctx-flag_override_.txt" 2>/dev/null | tee -a "$OUT/route-matrix.txt"
   fi
 fi
 
