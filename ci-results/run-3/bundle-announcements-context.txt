@@ -1,0 +1,1 @@
+ item "+t.id+" was dropped."},onDragCancel(e){let{active:t}=e;return"Dragging was cancelled. Draggable item "+t.id+" was dropped."}};function j(e){var t;let n,{announcements:r=I,container:i,hiddenTextDescribedById:a,screenReaderInstructions:o=O}=e,{announce:s,announcement:l}=function(){let[e,t]=(0,E.useState)("");return{announce:(0
