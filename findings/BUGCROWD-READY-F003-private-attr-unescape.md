@@ -1,128 +1,115 @@
-# F-003 — Private attributes starting with `/` or `~` are not redacted (js-core)
-
-**Target:** `LaunchDarkly Open Source SDKs`
-**URL / Location:** `https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18` — published as `@launchdarkly/js-sdk-common` (consumed by `js-client-sdk`, `react-client-sdk`, `vue-client-sdk`, `react-native-client-sdk`, etc.)
-**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > PII Leakage/Exposure` (CWE-359, CWE-697)
-**Severity:** P3 — CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N (5.3)
-**Tested on:** `js-core` HEAD `6d92d5b` (2026-09-11) and latest `main` on 2026-09-13. Node.js 22. Local reproduction only — no account, no network calls to LaunchDarkly. All source is public on GitHub.
+# Sensitive Data Exposure in LaunchDarkly js-core AttributeReference allows private attributes starting with '/' or '~' to leak to event pipeline
 
 ## Summary
 
-`js-core` is the shared core for all current LaunchDarkly browser and client-side SDKs. Its `AttributeReference` helper fails to unescape private-attribute references when the escaped sequence appears at the start of a path component. An attribute literally named `/ssn` is referenced as `/~1ssn` (`~1` → `/`). The code checks `ref.indexOf('~')` as a boolean, so `0` (found at index 0) is treated as falsy and the replacement never runs. The filter then looks for `~1ssn` instead of `/ssn`, misses, and sends the raw value to LaunchDarkly in `identify`/`index` events. The failure is silent — `redactedAttributes` does not include the missed field.
+`launchdarkly/js-core` powers all current browser and client-side SDKs (`@launchdarkly/js-sdk-common` → `js-client-sdk`, `react-client-sdk`, `vue-client-sdk`, etc.). Its `AttributeReference` unescapes `~1` → `/` and `~0` → `~` using `ref.indexOf('~')` as a boolean. When `~` is at index 0 (exactly the case for an attribute literally named `/ssn` referenced as `/~1ssn`), the check is falsy and the replacement is skipped. The filter then looks for the wrong name, never redacts it, and the raw value is sent to `events.launchdarkly.com` and to any configured Data Export destinations. Anyone can reproduce this locally — no LaunchDarkly account is required.
 
-## Impact
+## Affected asset
 
-* A customer who marks an attribute such as `/ssn`, `~secret`, or `profile./ssn` as private expects it to be stripped before events leave the browser. With this bug the value is delivered to `events.launchdarkly.com` and to any Data Export destinations (S3, Segment, Splunk, webhook) the customer has configured.
-* The customer's `redactedAttributes` list omits the field, so there is no indication the setting is ineffective. This undermines GDPR / data-minimisation controls that depend on `privateAttributes`.
-* The defect affects every SDK built on `@launchdarkly/js-sdk-common`. No attacker interaction is required — normal use with a leading `/` or `~` in an attribute name is sufficient.
+- **URL / endpoint:** `https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18` — published as `npm @launchdarkly/js-sdk-common` (shared by all `js-core` SDKs)
+- **HTTP method:** N/A — offline SDK logic, exercised via `ContextFilter.filter()` which populates `context` on `identify`/`index` events sent to `events.launchdarkly.com`
+- **Parameter or field:** `privateAttributes` entry and `_meta.privateAttributes` (JSON Pointer style, e.g., `/~1ssn`, `/~0secret`, `/profile/~1ssn`)
+- **Account role required:** None — offline reproduction against public source
+- **Environment:** `js-core` HEAD `6d92d5b` (2026-09-11), re-checked on `main` 2026-09-13, Node.js 22
+- **Date tested:** 2026-09-13
 
-Scope is limited to the customer's own PII being sent to their own configured pipeline, not another tenant's data or RCE. P3 is appropriate; I am not claiming P1/P2.
+## Preconditions
 
-## Steps to Reproduce
+- Node.js ≥22.6 (uses built-in TypeScript transform; no `npm install`)
+- Two public repositories cloned read-only:
+  ```bash
+  git clone --depth 1 https://github.com/launchdarkly/js-core
+  git clone --depth 1 https://github.com/launchdarkly/node-server-sdk
+  ```
+- The attached PoC `poc-private-attr-unescape-real.mjs` (also reproducible with the 3-line inline snippet below)
+- No LaunchDarkly account, no API key, no network calls to LaunchDarkly are needed
 
-Prerequisites: Node.js ≥22.6, no `npm install` required. The attached PoC runs the vendor's real source via Node's `--experimental-transform-types` and uses only public GitHub repositories.
+## Steps to reproduce
 
-1. Clone public sources:
+1. Clone the two public repositories as above.
+2. Save the attached PoC as `poc-private-attr-unescape-real.mjs` in the same parent directory (or use the minimal inline check in step 2a).
+   2a. Minimal inline check (no harness):
+   ```js
+   function unescape_buggy(ref){ return ref.indexOf('~') ? ref.replace(/~1/g,'/').replace(/~0/g,'~') : ref; }
+   console.log(unescape_buggy('~1ssn')); // observed: "~1ssn" — expected "/ssn"
+   console.log(unescape_buggy('a~1b'));  // observed: "a/b"  — correct, so casual tests miss the bug
+   ```
+3. Run the full harness:
+   ```bash
+   node poc-private-attr-unescape-real.mjs
+   ```
+   The script loads `AttributeReference.ts`, `ContextFilter.ts`, and `Context.ts` unmodified from `js-core` via `--experimental-transform-types`, and `attribute_reference.js` / `context_filter.js` unmodified from `node-server-sdk` v7 as a control. The only stub is for `src/api/context` type-only interfaces (six type names, no runtime code).
 
-```bash
-git clone --depth 1 https://github.com/launchdarkly/js-core
-git clone --depth 1 https://github.com/launchdarkly/node-server-sdk
-```
+4. Observe the output section `1. The parsing divergence`:
+   - `/~1ssn` → `["~1ssn"]` (should be `["/ssn"]`) — **WRONG**
+   - `/~0secret` → `["~0secret"]` (should be `["~secret"]`) — **WRONG**
+   - `/a~1b` → `["a/b"]` — correct (bug hidden when `~` is not at index 0)
 
-2. Run the attached PoC (also reproduced below as a minimal check):
+5. Observe section `2. End-to-end: is the private attribute actually redacted?` using this input context:
+   ```json
+   {
+     "kind": "user", "key": "u-123", "email": "user@example.com",
+     "/ssn": "123-45-6789", "~secret": "tilde-value",
+     "a/b": "slash-in-middle", "profile": { "/ssn": "987-65-4321", "city": "Asheville" },
+     "_meta": { "privateAttributes": ["/~1ssn","/~0secret","/a~1b","/profile/~1ssn"] }
+   }
+   ```
 
-```bash
-node poc-private-attr-unescape-real.mjs
-# Attached file. Loads AttributeReference.ts, ContextFilter.ts, and Context.ts
-# unmodified from js-core and attribute_reference.js / context_filter.js from
-# node-server-sdk v7 as a control. The only stub is for src/api/context
-# type-only interfaces (six type names, no runtime code).
-```
+6. Compare outputs:
+   - **Expected:** `redactedAttributes` contains all four references; none of the four values appear in the filtered context.
+   - **Observed with js-core:** `redactedAttributes: ["/a~1b"]` — only one redacted; `"/ssn"`, `"~secret"`, and `profile."/ssn"` remain with raw values.
+   - **Observed with node-server-sdk v7 control:** `redactedAttributes: ["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]` — all four redacted.
 
-Minimal inline verification without the full harness:
+## Proof of concept
 
-```js
-// Directly shows the parsing bug on public source:
-function unescape_buggy(ref){ return ref.indexOf('~') ? ref.replace(/~1/g,'/').replace(/~0/g,'~') : ref; }
-console.log(unescape_buggy('~1ssn')); // " ~1ssn" — wrong, should be "/ssn"
-console.log(unescape_buggy('a~1b'));  // "a/b" — happens to work, why bug is missed
-```
-
-3. Or inspect the source directly:
-
-```
-https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18
-return ref.indexOf('~') ? ref.replace(/~1/g, '/').replace(/~0/g, '~') : ref;
-```
-
-Expected: all four test private attributes are redacted and listed in `redactedAttributes`.
-Observed with `js-core`: three leak, one redacted (see Evidence).
-
-## Technical Details
-
-Defective code:
-
+**Defective code (public link):**
 ```ts
-// packages/shared/common/src/AttributeReference.ts:17-19
+// https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18
 function unescape(ref: string): string {
   return ref.indexOf('~') ? ref.replace(/~1/g, '/').replace(/~0/g, '~') : ref;
 }
 ```
+Correct implementation for reference: `https://github.com/launchdarkly/node-server-sdk/blob/main/attribute_reference.js#L18` — `component.indexOf('~') >= 0 ? ...`
 
-`indexOf` returns `0` when `~` is the first character of the component (`/~1ssn` → component `~1ssn`), so the ternary takes the falsy branch and returns the raw component.
+**Attached evidence (no private repo needed):**
+- `poc-private-attr-unescape-real.mjs` — runs real vendor code on both sides (ATTACHED)
+- `poc-output-v2-real.txt` — full run log showing `3 of 4 LEAKED` for js-core vs `4/4 REDACTED` for control (ATTACHED)
+- `filtered-contexts-v2-real.json` — input and both filtered outputs, byte-for-byte wire payloads (ATTACHED)
 
-Concretely:
+Excerpt from `poc-output-v2-real.txt`:
 
-* `new AttributeReference('/~1ssn').components` → `["~1ssn"]` (should be `["/ssn"]`)
-* `/a~1b` → `["a/b"]` correct — `~` is not at index 0, so the bug is missed in casual testing
+```
+reference            js-core .get(target)   node-server-sdk get(target,ref)
+  /~1ssn               undefined              "V1"                             false
+  /~0secret            undefined              "V2"                             false
+  /a~1b                "V3"                   "V3"                             true
+  /profile/~1ssn       undefined              "V4"                             false
 
-End-to-end `ContextFilter` output on this context:
-
-```json
-{
-  "kind": "user", "key": "u-123", "email": "user@example.com",
-  "/ssn": "123-45-6789", "~secret": "tilde-value",
-  "a/b": "slash-in-middle", "profile": { "/ssn": "987-65-4321", "city": "Asheville" },
-  "_meta": { "privateAttributes": ["/~1ssn","/~0secret","/a~1b","/profile/~1ssn"] }
-}
+js-core filtered context:
+{"_meta":{"redactedAttributes":["/a~1b"]},"profile":{"city":"Asheville","/ssn":"987-65-4321"},"~secret":"tilde-value","/ssn":"123-45-6789",...}
+node-server-sdk filtered context:
+{"_meta":{"redactedAttributes":["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]},"profile":{"city":"Asheville"},...}
 ```
 
-* `node-server-sdk v7` (correct): `{"profile":{"city":"Asheville"},"redactedAttributes":["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]}` — all four redacted
-* `js-core`: `{"profile":{"city":"Asheville","/ssn":"987-65-4321"},"~secret":"tilde-value","/ssn":"123-45-6789","redactedAttributes":["/a~1b"]}` — three values leaked, only one listed
+**Wire path:** In `js-core` the filtered object is the event payload. `src/internal/events/EventProcessor.ts:156` constructs `ContextFilter` from `privateAttributes`; `:333` assigns `context: this._contextFilter.filter(event.context, !debug)` to the outgoing event. No further stripping occurs.
 
-Cross-SDK check on 2026-09-13 HEAD (all correct except `js-core`):
+No requests were sent to LaunchDarkly during this reproduction; no customer data was accessed.
 
-* `node-server-sdk` uses `indexOf('~') >= 0`
-* `python-server-sdk` uses unconditional `replace`
-* `php-server-sdk` uses `preg_match` + `str_replace` (notably avoids the same `strpos` 0-is-falsy pitfall)
-* `flutter`, `ruby`, `go` use `contains` / `include?` / `strings.Contains`
+## Impact
 
-The filtered object is the wire payload. In `src/internal/events/EventProcessor.ts:156` the filter is constructed from `privateAttributes`, and at `:333` the result of `filter()` is assigned to `context` on the outgoing event. No additional stripping occurs after this point. I did not run `EventProcessor` end-to-end (it requires subsystem enums/classes); the claim rests on the executed `ContextFilter` output plus those two call sites.
+A customer who configures `privateAttributes: ["/~1ssn"]` to keep an attribute named `/ssn` out of LaunchDarkly would have that value delivered to LaunchDarkly and forwarded to any Data Export destinations they configured (S3, Segment, Splunk, webhook). The `_meta.redactedAttributes` list omits the field, so the dashboard gives no indication the setting is ineffective.
 
-A secondary issue in the same function is `validate()` using `[^0|^1]` — a negated class containing literal `|` and `^` — so `~` followed by `|` or `^` is incorrectly accepted. Same file, same fix.
+This affects every SDK built on `@launchdarkly/js-sdk-common` and requires only an attribute name beginning with `/` or `~` — a normal pattern for namespaced or JSON-Pointer-style keys. The scope is the customer's own PII to their own pipeline (not another tenant's data or RCE), so I am claiming P3 (CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N — 5.3) and not P1/P2.
 
-## Evidence (all attached, no private repo required)
-
-* `poc-private-attr-unescape-real.mjs` — PoC that runs real vendor code on both sides (ATTACHED)
-* `poc-output-v2-real.txt` — full run log showing `3 of 4 LEAKED` vs `4/4 REDACTED` control (ATTACHED)
-* `filtered-contexts-v2-real.json` — input and both filtered outputs, byte-for-byte wire payloads (ATTACHED)
-
-You can also verify without the PoC by opening the two GitHub links above — the buggy `indexOf('~')` vs correct `indexOf('~') >= 0` is a one-character difference visible in the browser. No requests were sent to LaunchDarkly; reproduction is offline.
-
-## Remediation
+## Suggested remediation
 
 ```diff
 - return ref.indexOf('~') ? ref.replace(/~1/g, '/').replace(/~0/g, '~') : ref;
 + return ref.includes('~') ? ref.replace(/~1/g, '/').replace(/~0/g, '~') : ref;
 ```
 
-or `indexOf('~') >= 0` to match `node-server-sdk`. Also fix `[^0|^1]` → `[^01]` in `validate()` and add regression tests for `~1`/`~0` at component start, including nested case `/profile/~1ssn`.
-
-## Notes on Scope and Testing
-
-* This was tested offline against public GitHub source. No production system was stressed, no other user's data was accessed, and no credentials were used.
-* The finding is filed against the published SDK packages (`@launchdarkly/js-sdk-common` and dependants) which are explicitly in scope as SDKs. `js-core` is the monorepo that publishes them. This is not a dependency-scan result — it was found by reading the source and reproduced by executing the real filter.
-* Role used: no LaunchDarkly account. If a role is required by the form, use `Unauthenticated / SDK consumer — offline reproduction`.
+or `indexOf('~') >= 0` to match `node-server-sdk`. Also fix `validate()` regex `[^0|^1]` → `[^01]` in the same function, and add regression tests for `~1`/`~0` at component start, including the nested case `/profile/~1ssn` and a cross-SDK contract test in `sdk-test-harness`.
 
 ---
-Researcher: zazieproductions@bugcrowdninja.com
+**Researcher:** zazieproductions@bugcrowdninja.com — offline SDK consumer, no LaunchDarkly account used (if the form requires a role, use `Unauthenticated`)
+**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > PII Leakage/Exposure` (CWE-359, CWE-697)

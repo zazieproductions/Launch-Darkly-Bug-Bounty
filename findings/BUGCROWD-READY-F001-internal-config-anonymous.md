@@ -1,95 +1,132 @@
-# F-001 — Unauthenticated disclosure of internal configuration via /internal/config/anonymous
-
-**Target:** `app.launchdarkly.com`
-**URL / Location:** `https://app.launchdarkly.com/internal/config/anonymous` (GET)
-**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > For Internal Asset`
-**Severity:** P4 — CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N (5.3)
-**Tested:** Unauthenticated, no account. Live, reproducible from any network. Example verification `2026-09-14 00:10:31 GMT`, response `200`, `282,232` bytes, `content-type: application/json`.
+# Unauthenticated Sensitive Data Exposure in GET /internal/config/anonymous allows disclosure of 2,339 internal flag values and business configuration
 
 ## Summary
 
-`GET /internal/config/anonymous` is an intentionally unauthenticated bootstrap endpoint. Alongside expected logged-out configuration it returns `allClientSideFlags` — the evaluated values of 2,339 client-side flags for LaunchDarkly's own dogfooding environment as seen by an anonymous visitor. Those values include internal ticket references, unreleased roadmap notes, platform internals, a signup country blocklist, Marketo form identifiers, internal hostnames, and live feature-flag posture that is not intended for anonymous users.
+`GET https://app.launchdarkly.com/internal/config/anonymous` is intentionally unauthenticated and returns `allClientSideFlags` — 2,339 evaluated flag values for LaunchDarkly's own dogfooding environment as seen by an anonymous visitor. Those values include internal ticket IDs, unreleased roadmap notes, platform internals, a signup country blocklist, Marketo form identifiers, internal hostnames, and live feature-flag posture. Any internet user can retrieve this with a single `curl` and no account. The sibling `GET /internal/config/authenticated` correctly requires authentication (`401 Invalid account ID header`), so the issue is what is published through the unauthenticated route, not that it is reachable.
 
-The sibling `GET /internal/config/authenticated` correctly requires authentication (`401 Invalid account ID header`), and most other `/internal/*` routes are 401. The issue is not that the route is reachable, but what is published through it. Anyone on the internet can reproduce this with a single `curl` — no private repository or credentials are needed.
+## Affected asset
+
+- **URL / endpoint:** `https://app.launchdarkly.com/internal/config/anonymous`
+- **HTTP method:** `GET`
+- **Parameter or field:** None — no query params, headers, or cookies required. Response field `allClientSideFlags` (plus `dogfoodBaseUri`, `observabilityPrivateGraphUrl`, `secureModeContextHash` for context)
+- **Account role required:** None — fully unauthenticated
+- **Environment:** Production `app.launchdarkly.com`
+- **Date tested:** 2026-09-14 00:10:31 GMT (live, re-verifiable from any network; `200`, `282,232` bytes, `content-type: application/json`, via Varnish/Fastly)
+
+## Preconditions
+
+- No account, no `ldso` cookie, no `Authorization` header, no special headers.
+- A fresh browser profile or incognito session, or any machine with `curl` and `python3`.
+- No private repository, no Bugcrowd account state, and no proxy history required — the endpoint is public.
+
+## Steps to reproduce
+
+1. Open a fresh browser profile or terminal with no LaunchDarkly cookies.
+2. Fetch the anonymous config:
+   ```bash
+   curl -sS -i 'https://app.launchdarkly.com/internal/config/anonymous' | head -n 20
+   ```
+   Observe `HTTP/1.1 200` and `content-type: application/json`. Body is ~282KB JSON with `allClientSideFlags`.
+3. Confirm the sibling endpoint is correctly gated:
+   ```bash
+   curl -sS -i 'https://app.launchdarkly.com/internal/config/authenticated'
+   ```
+   Observe `HTTP/1.1 401` with body `{"code":"unauthorized","message":"Invalid account ID header"}`.
+4. Confirm discoverability:
+   ```bash
+   curl -sS 'https://app.launchdarkly.com/internal/' | python3 -m json.tool
+   ```
+   Observe `200` with `_links` containing `account` and `actions` — also unauthenticated.
+5. Inspect disclosed fields (one-line examples, no secrets needed):
+   ```bash
+   curl -sS 'https://app.launchdarkly.com/internal/config/anonymous' | python3 -c '
+   import json,sys
+   d=json.load(sys.stdin)
+   f=d["allClientSideFlags"]
+   print(f["pql-signup-junk-country-list"])
+   print(d["dogfoodBaseUri"])
+   print(f.get("experiment-metric-compatibility-rules",[])[0].get("docNote","")[:80])
+   '
+   ```
+   Expected: anonymous callers receive only safe bootstrap data (e.g., a client-side ID and UI toggles).
+   Observed: the command prints the internal blocklist, internal relay host, and a docNote containing an internal ticket ID.
+
+## Proof of concept
+
+**Raw requests and responses (secrets redacted — `clientSideId` is truncated):**
+
+Request:
+```http
+GET /internal/config/anonymous HTTP/1.1
+Host: app.launchdarkly.com
+```
+
+Response (truncated, structure verbatim):
+```http
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+via: 1.1 varnish, 1.1 varnish
+date: Mon, 14 Sep 2026 00:10:31 GMT
+content-length: 282232
+
+{
+  "clientSideId": "5866f389...[redacted]",
+  "dogfoodBaseUri": "https://relay-fdv2-prod.ld.catamorphic.com",
+  "dogfoodStreamUri": "https://relay-fdv2-prod.ld.catamorphic.com",
+  "observabilityPrivateGraphUrl": "https://pri.observability.app.launchdarkly.com",
+  "allClientSideFlags": {
+    "pql-signup-junk-country-list": ["EG","ID","VN","PK","BD","NP","MA","NG","DZ","KE"],
+    "experiment-metric-compatibility-rules": [{"docNote": "[ticket ID — redacted in this report; live body contains e.g. LAUNC-2510]", "reason": "Q3 2026 target, not yet built"}],
+    "...": "... 2,339 total flags ..."
+  },
+  "secureModeContextHash": "c846bc46...[truncated]"
+}
+```
+
+For the authenticated sibling:
+```http
+GET /internal/config/authenticated HTTP/1.1
+Host: app.launchdarkly.com
+
+HTTP/1.1 401 Unauthorized
+{"code":"unauthorized","message":"Invalid account ID header"}
+```
+
+**Evidence attached (sanitized, no private repo):**
+- `curl-headers-anonymous.txt` — captured response headers for the 200 (ATTACHED)
+- `anonymous-flag-names.txt` — sorted list of all 2,339 flag names (ATTACHED, 76KB — proves scale without dumping the body)
+- `anonymous-redacted-snippet.json` — 796B redacted excerpt showing structure with one `pql-signup-junk-country-list` and one `docNote` example (ATTACHED)
+- Screenshot of `curl -i` from a clean profile (ATTACHED — optional but recommended)
+
+The full 282KB body is not attached unredacted; triage can fetch it directly from the public URL above, which still returns 200.
 
 ## Impact
 
-Impact is to LaunchDarkly's own confidentiality, not customer tenant data. All of the following were present in the live body and are readable by any anonymous internet client with a single GET (examples are verbatim from the response, truncated for size — full redacted snippet is attached):
+This is LaunchDarkly's own internal confidentiality, not customer tenant data, so I am not claiming auth bypass or tenant compromise.
 
-* Internal ticket IDs in `experiment-metric-compatibility-rules[*].docNote` — e.g., `LAUNC-2510`, `MTRX-2082`
-* Unreleased roadmap and status reasons — e.g., `Q3 2026 target, not yet built`, `Decoupled analysis unit isn't available yet`, `Not planned`
-* Platform internals — e.g., `Federal runs legacy Airflow, which does not support trace events`, `CUPED + metric filters unsupported per commit e2c2f04`
-* Business rules — `pql-signup-junk-country-list: ["EG","ID","VN","PK","BD","NP","MA","NG","DZ","KE"]`
-* Marketing configuration — `marketo-form-submission-config` with form IDs `1941`, `3144`, `3247`, `3331`
-* Internal hosts — `dogfoodBaseUri https://relay-fdv2-prod.ld.catamorphic.com`, `observabilityPrivateGraphUrl https://pri.observability.app.launchdarkly.com`
-* Live posture signals among the 2,339 flags — e.g., `enable-google-oauth-email-verified-check=false`, `enforce-saml-conditions-validity-window=false`, `disable-legacy-access-token-auth-fallback=false`, `mfa-enforcement=false` (full sorted flag-name list attached)
+Any anonymous internet user can read, with one GET:
 
-The `clientSideId` and third-party browser keys (Algolia, Datadog, Stripe publishable, etc.) are also in the body but are explicitly out of scope per program and are not part of this claim.
+* Internal ticket IDs in `experiment-metric-compatibility-rules[*].docNote` (maps unreleased work to the internal tracker)
+* Unreleased roadmap and status reasons (`Q3 2026 target`, `Decoupled analysis unit isn't available yet`)
+* Platform internals (`Federal runs legacy Airflow...`, `CUPED + metric filters unsupported per commit e2c2f04`)
+* Business rules (`pql-signup-junk-country-list` — 10 countries treated as junk signups)
+* Marketing configuration (`marketo-form-submission-config` with form IDs `1941`, `3144`, `3247`, `3331` used by `/internal/contact-us/forms/{formId}/public-submit`)
+* Internal hosts (`dogfoodBaseUri`, `observabilityPrivateGraphUrl` including the private graph `pri.` host)
+* Live posture signals among the flags (`enable-google-oauth-email-verified-check=false`, `enforce-saml-conditions-validity-window=false`, `disable-legacy-access-token-auth-fallback=false`, `mfa-enforcement=false` — full list in the attached flag-name file)
 
-`GET /internal/plans` (same unauthenticated surface, `200`) returns the commercial plan catalogue with internal plan IDs and entitlement limits. It is included here as the same root cause rather than a separate report.
+The `clientSideId` and third-party browser keys (Algolia, Datadog, Stripe publishable) are also in the body but are explicitly non-qualifying per the program brief and are not part of this claim.
 
-I am claiming P4 only. A potential escalation — whether `secureModeContextHash` in the same body could be used as a signing oracle — was tested and is negative (see below).
+`GET /internal/plans` (same unauthenticated surface, `200`) returns the commercial plan catalogue with internal plan IDs; it is noted here as the same root cause, not a second report.
 
-## Steps to Reproduce
+A potential escalation — whether `secureModeContextHash` in the same body could be abused as a signing oracle — was tested across 10+ requests with varied query params, cookies, and headers (`ld-flag-override`, `x-ld-project-id`, etc.). Each response contained a fresh random UUID for `dogfoodContext` and a different hash with no caller influence, so no oracle was demonstrated. This report claims information disclosure only.
 
-No account or cookies required. From any machine or clean browser profile:
+## Suggested remediation
 
-```bash
-# 1. Anonymous config — observe 200 and full body
-curl -sS -i 'https://app.launchdarkly.com/internal/config/anonymous' | head -n 20
-# Expect: HTTP/1.1 200, content-type: application/json, ~282KB JSON with allClientSideFlags
-
-# 2. Sibling is correctly gated (proves this is not a blanket auth failure)
-curl -sS -i 'https://app.launchdarkly.com/internal/config/authenticated'
-# → 401 {"code":"unauthorized","message":"Invalid account ID header"}
-
-# 3. Route is discoverable unauthenticated
-curl -sS 'https://app.launchdarkly.com/internal/' | python3 -m json.tool
-
-# 4. Inspect disclosed fields (example)
-curl -sS 'https://app.launchdarkly.com/internal/config/anonymous' | python3 -c '
-import json,sys
-d=json.load(sys.stdin)
-f=d["allClientSideFlags"]
-print(f["pql-signup-junk-country-list"])
-print(d["dogfoodBaseUri"])
-'
-```
-
-Expected: anonymous callers receive only safe bootstrap data.
-Observed: internal tickets, roadmap dates, platform internals, blocklist, Marketo IDs, private graph host, and posture flags as listed above.
-
-Triage can reproduce immediately from any network — no Bugcrowd account, no GitHub access, and no repository clone is required. The endpoint is public and the `curl` above is sufficient.
-
-## Technical Details
-
-The endpoint ships both logged-out UI configuration and internally-scoped flag values with no server-side classification of which flag values are safe for anonymous delivery. Any value set as a client-side flag in the dogfooding environment becomes world-readable.
-
-Secure-mode review: the body also contains `secureModeContextHash` and the `dogfoodContext` it signs. I tested whether a caller could influence the signed context (query params, cookies, headers including `ld-flag-override`, `x-ld-project-id`, etc.) across more than ten requests. Each response contained a fresh random UUID for `dogfoodContext` and a different hash, with no caller influence. The signing-oracle escalation is therefore closed, and this report does not claim a secure-mode bypass. The hosts `ld.catamorphic.com` and `ld-stg.launchdarkly.com` were never contacted; they are reported only as disclosed strings.
-
-## Evidence (all attached or live-verifiable, no private repo)
-
-* **Live endpoint** — the primary proof is the public URL itself. Triage can run the `curl -i` above from any host and observe `200`.
-* `curl-headers-anonymous.txt` — captured response headers (`200`, `application/json`, `via: Varnish/Fastly`) ATTACHED
-* `anonymous-flag-names.txt` — sorted list of all 2,339 flag names from `allClientSideFlags` ATTACHED (proves scale without dumping 282KB body)
-* `anonymous-redacted-snippet.json` — redacted 3KB excerpt showing structure with one ticket ID and one `docNote` example, with sensitive values truncated ATTACHED
-* Screenshot `curl -i` from clean profile (ATTACHED) — optional but helpful
-
-Do not attach the full 282KB body unredacted; the truncated snippet + flag-name list is sufficient and avoids leaking unnecessary internal values. If Bugcrowd requires the full body for verification, note that triage can fetch it directly from the public URL.
-
-## Remediation
-
-* Serve only safe bootstrap data from `/internal/config/anonymous`. Move roadmap, business rules, marketing form config, and internal host references to the authenticated endpoint.
-* Add a publish-time check in the dogfooding environment that blocks client-side flag values containing ticket patterns (`[A-Z]{3,}-\d+`), non-`launchdarkly.com` hostnames, or policy lists — the same client-side visibility rule documented for customers.
-* Keep `secureModeContextHash` bound to a server-generated random context per session and add a regression test that asserts caller-supplied values do not affect it. Strip free-text `docNote` / `reason` fields from client-delivered values.
-
-## Notes on Scope and Testing
-
-* Testing was read-only (single GETs), no `ldso` cookie or `Authorization` header, no modification, no other user's data. Any customer account ID present in the body was not used in any request, header, or probe.
-* The finding is in scope — `app.launchdarkly.com/api/v2/` and `/internal/` are explicitly listed as customer-facing and in scope in the program brief.
-* This is not a scan result, not version/banner disclosure (build SHA present but not claimed), not third-party integration testing (Marketo IDs disclosed by LaunchDarkly, no Marketo system contacted), and not HTML injection / clickjacking / CSRF.
-* Role used: none — fully unauthenticated. If the form requires a role, use `Unauthenticated`.
+- Serve only safe bootstrap data from `/internal/config/anonymous` (e.g., `clientSideId` and UI-safe toggles). Move roadmap, business rules, marketing form config, and internal host references to the authenticated endpoint.
+- Add a publish-time check in the dogfooding environment that blocks client-side flag values containing ticket patterns (`[A-Z]{3,}-\d+`), non-`launchdarkly.com` hostnames, or policy lists — the same visibility rule documented for customers.
+- Keep `secureModeContextHash` bound to a server-generated random context per session and add a regression test asserting caller-supplied values do not affect it. Strip free-text `docNote`/`reason` fields from client-delivered values.
 
 ---
-Researcher: zazieproductions@bugcrowdninja.com
-Tester account: none used — anonymous internet user
+**Researcher:** zazieproductions@bugcrowdninja.com — no test account used (anonymous internet user)
+**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > For Internal Asset`
+**Severity:** P4 — CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N (5.3) — information disclosure only, not claimed higher
