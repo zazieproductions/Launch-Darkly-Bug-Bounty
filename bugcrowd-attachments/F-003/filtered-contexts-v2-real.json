@@ -1,0 +1,54 @@
+{
+ "input": {
+  "kind": "user",
+  "key": "u-123",
+  "email": "user@example.com",
+  "/ssn": "123-45-6789",
+  "~secret": "tilde-value",
+  "a/b": "slash-in-middle",
+  "profile": {
+   "/ssn": "987-65-4321",
+   "city": "Asheville"
+  },
+  "_meta": {
+   "privateAttributes": [
+    "/~1ssn",
+    "/~0secret",
+    "/a~1b",
+    "/profile/~1ssn"
+   ]
+  }
+ },
+ "js_core": {
+  "_meta": {
+   "redactedAttributes": [
+    "/a~1b"
+   ]
+  },
+  "profile": {
+   "city": "Asheville",
+   "/ssn": "987-65-4321"
+  },
+  "~secret": "tilde-value",
+  "/ssn": "123-45-6789",
+  "email": "user@example.com",
+  "key": "u-123",
+  "kind": "user"
+ },
+ "node_server_sdk_v7": {
+  "_meta": {
+   "redactedAttributes": [
+    "/a~1b",
+    "/profile/~1ssn",
+    "/~0secret",
+    "/~1ssn"
+   ]
+  },
+  "profile": {
+   "city": "Asheville"
+  },
+  "email": "user@example.com",
+  "key": "u-123",
+  "kind": "user"
+ }
+}
