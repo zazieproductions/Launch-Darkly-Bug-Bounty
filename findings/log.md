@@ -481,3 +481,76 @@ authenticated own-tenant testing. Unauth announcement writes stay permanently di
   mandatory; two conflicts appeared (workflow + F-002 report) and were resolved by taking my versions —
   verified first with `diff` that upstream had no content mine lacked (CI never edits `findings/` or the
   workflow).
+
+## 2026-09-13 — Session: re-verify everything against current HEAD; harden F-003 to real code both sides
+
+**Branch note:** work resumed on a fresh branch cut from `main` (1e34aa1), which predated all prior
+findings. Merged `origin/arena/01a09299-launch-darkly-bug-bounty` in so the findings, PoCs and CI
+tooling are present. Nothing was rewritten.
+
+**Egress re-checked, not assumed:** `curl` to `app.launchdarkly.com` and `stream.launchdarkly.com`
+still fails `SSL_ERROR_SYSCALL`; `example.com` fails the same way; `api.github.com` returns 200. So
+the sandbox is GitHub-only exactly as previously recorded, and no LaunchDarkly host was contacted.
+
+**Fresh clones at current HEAD** (`sdk/`, gitignored): `js-core` `6d92d5b` (2026-09-11),
+`node-server-sdk` `c22f934` (v7.0.4), `python-server-sdk` `296311f` (2026-09-08).
+
+### F-003 — still present, and the PoC is now fully real ⭐⭐⭐
+
+- Defect re-confirmed at current js-core HEAD, `AttributeReference.ts:18`:
+  `return ref.indexOf('~') ? ref.replace(/~1/g,'/').replace(/~0/g,'~') : ref;`
+- **Removed the last transcription.** The v1 PoC transcribed js-core's redaction loop. New
+  `tools/poc-private-attr-unescape-real.mjs` executes the vendor's actual `ContextFilter.ts`,
+  `Context.ts` and `AttributeReference.ts` **unmodified** via Node's `--experimental-transform-types`,
+  plus a resolver hook (`tools/ts-resolve-hook.mjs`) for js-core's extensionless relative imports.
+  Sole substitution: `tools/ts-stub-api-types.mjs` for the `src/api/context` interface subtree —
+  proven runtime-neutral (`grep -rnE '^\s*(export\s+)?(abstract\s+)?(class|function|const|let|var|enum)\s' src/api/context/`
+  → no matches; the subtree is interfaces only, 6 exported type names). No vendor logic replaced.
+  - Dead end recorded honestly: executing `EventProcessor` end to end needs `src/api/subsystem/**`,
+    which DOES contain real enums (`DataSourceState`, `LDEventType`, `LDDeliveryStatus`) and a class
+    (`CallbackHandler`). Stubbing that would substitute vendor logic, so the wire link is cited by
+    source instead (`EventProcessor.ts:156` constructs the filter; `:333`
+    `context: this._contextFilter.filter(event.context, !debug)` → the filtered object *is* the wire
+    `context` for identify/index/debug events).
+- **Result, unchanged and now from real code on both sides:** `_components` read out of the vendor's
+  own `AttributeReference` object is `["~1ssn"]` where the spec requires `["/ssn"]`; end-to-end
+  js-core LEAKS 3 of 4 private attributes (`/ssn`, `~secret`, nested `profile./ssn`) while
+  node-server-sdk v7 REDACTS 4/4. js-core `_meta.redactedAttributes` = `["/a~1b"]` → silent.
+- **Cross-SDK survey widened from 4 to 7 implementations**, all read from current default branches:
+  node-server-sdk (`indexOf('~') >= 0`), python-server-sdk (unconditional `replace`),
+  **php-server-sdk** (`preg_match('/(~[^01]|~$)/')` + unconditional `str_replace`),
+  **flutter-client-sdk** (`ref.contains('~')`), ruby-server-sdk (`include? '~'`),
+  go-sdk-common (`strings.Contains`) — all correct. **PHP is the key control:** `strpos` has the same
+  "0 is falsy" hazard as JS `indexOf` and still avoids the bug. js-core is isolated.
+- **Scope question answered with data instead of assertion.** `js-core` does not end in `-sdk`, and
+  the program excludes non-`-sdk` repos. But `js-core` publishes **33** npm packages, the majority
+  named `@launchdarkly/*-sdk` (`js-client-sdk`, `node-server-sdk`, `react-sdk`, `vue-client-sdk`,
+  `electron-client-sdk`, `react-native-client-sdk`, `svelte-client-sdk`, `cloudflare-server-sdk`,
+  `vercel-server-sdk`, `fastly-server-sdk`, `akamai-server-edgekv-sdk`, `server-sdk-ai`, …), all
+  inheriting the buggy file. Verified chain: `@launchdarkly/js-client-sdk` →
+  `@launchdarkly/js-client-sdk-common@1.32.0` → `@launchdarkly/js-sdk-common@2.26.0`. Report §0.5
+  states the position and the fallback (file against the published `*-sdk` packages).
+- Corrected a stale claim in the report: the affected repo list previously named
+  `angular-client-sdk` and `react-native-sdk`, which are not in the current public org listing. The
+  verified list is `js-client-sdk`, `react-client-sdk`, `vue-client-sdk`, `node-client-sdk`,
+  `electron-client-sdk`, `react-native-client-sdk` (archived 2024-10-25).
+- Report gains a new **§0 Verification record**; §2 now points at it; §3 and §8 updated.
+
+### F-002 — re-verified, scope is clean
+
+- Both PoCs re-run against the fresh clones. `node-server-sdk/context.js` and
+  `python-server-sdk/ldclient/context.py` are **`-sdk`-suffixed repos**, so unlike F-003 this one has
+  no scope ambiguity.
+- Python PoC: 4/4 collisions, e.g. `user` key `device:abc:user:xyz` vs multi
+  `{device:abc, user:xyz}` → identical `fully_qualified_key` and identical secure-mode HMAC
+  (`6c55d1c9…`). JS PoC: 0 disagreements over 5880 generated contexts.
+- Secondary kind-name vector re-confirmed closed server-side by kind validation
+  (`context kind contains disallowed characters`).
+- Status unchanged: SDK-level flaw confirmed; **server-side leg still unproven** — needs §H of
+  `tools/ci-authenticated-phase.sh` against our own environment (requires the `LD_TOKEN` secret).
+  Not filed.
+
+### F-001 — unchanged, cannot be re-verified from here
+
+Unauthenticated by nature, so it needs live egress. The sandbox has none; the CI workflow is the
+route (`tools/ci-internal-probe.sh`). Left as-is; no claim changed.

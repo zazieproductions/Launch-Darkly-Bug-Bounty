@@ -1,0 +1,70 @@
+# F-003 PoC v2 — private attributes starting with "/" or "~" are never redacted by js-core
+
+  js-core HEAD under test : 6d92d5b 2026-09-11 ci(vue-sdk): remove scaffolding and add sdk-meta entry (#2008)
+  Code executed           : vendor sources, UNMODIFIED, loaded through Node --experimental-transform-types
+                            - packages/shared/common/src/AttributeReference.ts  (real)
+                            - packages/shared/common/src/ContextFilter.ts       (real)
+                            - packages/shared/common/src/Context.ts             (real)
+                            - node-server-sdk/attribute_reference.js            (real)
+                            - node-server-sdk/context_filter.js                 (real)
+  Sole substitution       : tools/ts-stub-api-types.mjs replaces the `src/api/context` interface
+                            subtree, which contains NO executable code (grep-verified). No vendor
+                            logic is replaced.
+
+## 1. Root cause, read straight out of the vendor objects
+
+  js-core AttributeReference (REAL) parsing of private-attribute references:
+
+    reference          _components (real object state)   expected per spec
+    /~1ssn             ["~1ssn"]                           ["/ssn"]                   <-- WRONG
+    /~0secret          ["~0secret"]                        ["~secret"]                <-- WRONG
+    /a~1b              ["a/b"]                             ["a/b"]                    OK
+    /profile/~1ssn     ["profile","~1ssn"]                 ["profile","/ssn"]         <-- WRONG
+
+  Why: unescape() uses `ref.indexOf('~')` as a boolean, and indexOf returns 0 when "~" is the
+  first character of the component -> falsy -> no unescaping. Components whose "~" is NOT first
+  ("a~1b") work, which is why the bug is easy to miss in casual testing.
+
+  Secondary defect in the same file, validate(): the character class is written [^0|^1], i.e. a
+  negated class containing a LITERAL "|" and "^", not an alternation. So "~" followed by a
+  character other than 0/1 is wrongly accepted:
+    js-core       isValidReference("/a~|b") = true
+    node-sdk v7   isValidReference("/a~|b") = true
+  (Go/Ruby/Python all reject it.) A typo'd private reference is silently accepted and then
+  silently never redacts, instead of being surfaced as invalid.
+
+## 2. End-to-end: does the private attribute actually get redacted?
+
+  context : {"kind":"user","key":"u-123","email":"user@example.com","/ssn":"123-45-6789","~secret":"tilde-value","a/b":"slash-in-middle","profile":{"/ssn":"987-65-4321","city":"Asheville"},"_meta":{"privateAttributes":["/~1ssn","/~0secret","/a~1b","/profile/~1ssn"]}}
+
+  js-core (REAL ContextFilter.filter) output:
+    {"_meta":{"redactedAttributes":["/a~1b"]},"profile":{"city":"Asheville","/ssn":"987-65-4321"},"~secret":"tilde-value","/ssn":"123-45-6789","email":"user@example.com","key":"u-123","kind":"user"}
+
+  node-server-sdk v7 (REAL context_filter.js) output:
+    {"_meta":{"redactedAttributes":["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]},"profile":{"city":"Asheville"},"email":"user@example.com","key":"u-123","kind":"user"}
+
+  per-attribute result:
+    attribute                    reference            js-core      node-server-sdk v7
+    "/ssn" (top level)           /~1ssn               LEAKED -> "123-45-6789"  REDACTED
+    "~secret"                    /~0secret            LEAKED -> "tilde-value"  REDACTED
+    "a/b" (~ not first char)     /a~1b                REDACTED                 REDACTED
+    profile."/ssn" (nested)      /profile/~1ssn       LEAKED -> "987-65-4321"  REDACTED
+
+## 3. Why the failure is silent
+  js-core          _meta.redactedAttributes : ["/a~1b"]
+  node-sdk v7      _meta.redactedAttributes : ["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]
+  js-core claims it redacted 1 of 4, so the customer gets no signal that their
+  private-attribute configuration is not taking effect.
+
+## 4. Affected SDKs (everything built on @launchdarkly/js-sdk-common)
+  browser-sdk, react-client-sdk, vue-client-sdk, angular-client-sdk, node-client-sdk,
+  react-native-sdk, js-client-sdk and the edge/serverless SDKs packaged from
+  packages/shared/sdk-server - i.e. every current LaunchDarkly SDK that formats contexts
+  into events.
+
+## 5. Fix
+  AttributeReference.ts:18 ->  return ref.indexOf('~') >= 0 ? ... : ref;
+  (or ref.includes('~')), matching node-server-sdk/attribute_reference.js:18; and
+  validate(): [^0|^1] -> [^01].
+
+RESULT: 3 of 4 private attributes LEAKED by real js-core code: ["\"/ssn\" (top level)","\"~secret\"","profile.\"/ssn\" (nested)"]
