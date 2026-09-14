@@ -1,0 +1,350 @@
+=== 1. app-host SDK polling routes (in-scope host, client-side ID in path) ===
+GET /sdk/evalx/thisidshouldnotexist/contexts/AAAA    400      98B  {"code":"invalid_request","message":"couldn't parse user JSON: expected value at line 1 column 1"}
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/contexts/e30     400      84B  {"code":"invalid_request","message":"couldn't parse user JSON: missing field `key`"}
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoibXVsdGkiLCJ1c2VyIjp7ImtleSI6InUxIn0sIm9yZyI6eyJrZXkiOiJvMSJ9fQ 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ?withReasons=true 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/users/testuser   400      98B  {"code":"invalid_request","message":"couldn't parse user JSON: expected value at line 1 column 1"}
+GET /msdk/evalx/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+GET /msdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      47B  {"code":"not_found","message":"Page not found"}
+GET /sdk/goals/thisidshouldnotexist                  404       0B  
+GET /sdk/evalx/x/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+
+=== 2. stream.launchdarkly.com route existence (in scope) ===
+GET stream/all                                       401       0B  
+GET stream/all?filter=x                              401       0B  
+GET stream/eval/thisidshouldnotexist/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404       0B  
+GET stream/eval/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404       0B  
+GET stream/ping/x                                    404       0B  
+GET stream/mping                                     401       0B  
+GET stream/meval/AAAA                                401       0B  
+GET stream/msdk                                      404      19B  404 page not found 
+GET stream/msdk/bulk                                 404      19B  404 page not found 
+GET stream/bulk_eval/contexts                        404      19B  404 page not found 
+GET stream/sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/msdk/evalx/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/v1/all                                    404      19B  404 page not found 
+GET stream/all/x                                     404      19B  404 page not found 
+
+=== 3. events.launchdarkly.com (in scope) ===
+GET events/                                          499       0B  
+GET events/events                                    404       0B  
+GET events/events/identify                           404       0B  
+GET events/events/bulk                               404       0B  
+GET events/bulk                                      404       0B  
+GET events/mobile                                    404       0B  
+GET events/events/debug                              404       0B  
+GET events/diagnostic                                404       0B  
+POST events/identify []                              404       0B  
+POST events/bulk []                                  404       0B  
+
+=== 4. app root subroutes incl. /internal/ and /private/ ===
+GET /                                                200    4551B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.5e1f8235c.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Sign in</title>  
+GET /api/v2                                          301      43B  <a href="/api/v2/">Moved Permanently</a>.  
+GET /api/v2/                                         200     730B  {"links":{"account":{"href":"/api/v2/account","type":"application/json"},"flag-statuses":{"href":"/api/v2/flag-statuses","type":"application/json"},"flags":{"href":"/api/v2/flags","type":"application/json"},"integrations":{"href":"/api/v2/integrations","type":"application/json"},"members":{"href":"/
+GET /api/v2/openapi.json                             200  2986052B  {   "openapi": "3.0.3",   "info": {     "title": "LaunchDarkly REST API",     "description": "This documentation describes LaunchDarkly's REST API. To access the complete OpenAPI spec directly, use [Get OpenAPI spec](https://launchdarkly.com/docs/api/other/get-openapi-spec).\n\nTo learn how to use L
+GET /api/v2/ips                                      404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/public-ips                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/public-ip-list                           200   10504B  {"addresses":["3.134.169.246/32","100.24.133.207/32","100.24.166.112/32","100.24.172.241/32","107.20.245.200/32","107.21.50.195/32","107.21.57.169/32","107.22.13.228/32","107.22.208.224/32","107.23.169.222/32","107.23.173.147/32","107.23.182.115/32","107.23.222.30/32","107.23.224.148/32","107.23.28.
+GET /api/v2/caller-identity                          401      56B  {"code":"unauthorized","message":"invalid access token"}
+GET /api/v2/announcements                            401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /api/v2/projects                                 401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal                                        301      45B  <a href="/internal/">Moved Permanently</a>.  
+GET /internal/                                       200     197B  {"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}
+GET /api/v2/internal                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private                                         404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private/                                        404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/private                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private/announcements                           404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /sdk                                             404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /msdk                                            404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /login                                           200    4551B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.5e1f8235c.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Sign in</title>  
+GET /signup                                          200    4699B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.5e1f8235c.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Create Your Free 
+GET /internal/account                                401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal/actions                                401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal/announcements                          401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal/members                                404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/projects                               401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal/flags                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/roles                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/teams                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/users                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/context-kinds                          404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/experiments                            404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/search                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/auditlog                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/settings                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/subscription                           404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/billing                                404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/status                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/health                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/version                                404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/account/members                        404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/account/settings                       404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/account/announcements                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/actions/list                           404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/features                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/segments                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/environments                           404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/organizations                          404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /internal/tokens                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+
+=== 4b. classify internal/private probes by response fingerprint ===
+  GET__api_v2_internal_.tx                                 OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__api_v2_private_.tx                                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_.tx                                        OTHER -> inspect                             <a href="/internal/">Moved Permanently</a>.  
+  GET__internal__.tx                                       *** UNAUTH INDEX (answers with no creds) *** {"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actio
+  GET__internal_account_.tx                                GATED internal route (account-ID header)     {"code":"unauthorized","message":"Invalid account ID header"}
+  GET__internal_account_announcements_.tx                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_account_members_.tx                        OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_account_settings_.tx                       OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_actions_.tx                                GATED internal route (account-ID header)     {"code":"unauthorized","message":"Invalid account ID header"}
+  GET__internal_actions_list_.tx                           OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_announcements_.tx                          GATED internal route (account-ID header)     {"code":"unauthorized","message":"Invalid account ID header"}
+  GET__internal_auditlog_.tx                               OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_billing_.tx                                OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_context-kinds_.tx                          OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_environments_.tx                           OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_experiments_.tx                            OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_features_.tx                               OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_flags_.tx                                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_health_.tx                                 OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_members_.tx                                OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_organizations_.tx                          OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_projects_.tx                               GATED internal route (account-ID header)     {"code":"unauthorized","message":"Invalid account ID header"}
+  GET__internal_roles_.tx                                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_search_.tx                                 OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_segments_.tx                               OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_settings_.tx                               OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_status_.tx                                 OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_subscription_.tx                           OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_teams_.tx                                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_tokens_.tx                                 OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_users_.tx                                  OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__internal_version_.tx                                OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__private_.tx                                         OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__private__.tx                                        OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+  GET__private_announcements_.tx                           OTHER -> inspect                               <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>
+
+=== 5. H4/H10: undocumented account-ID header probe (announcements + /internal/*) ===
+header-probe hits: 0 lines (0 = no candidate header changed the response)
+--- /internal/ unauthenticated index (recorded verbatim) ---
+  HDR HTTP/2 200 
+  HDR content-type: application/json
+  HDR referrer-policy: strict-origin-when-cross-origin
+  HDR strict-transport-security: max-age=31536000; includeSubDomains
+  HDR x-content-type-options: nosniff
+  HDR x-xss-protection: 1
+  HDR accept-ranges: bytes
+  HDR date: Mon, 14 Sep 2026 00:09:02 GMT
+  HDR via: 1.1 varnish
+  HDR x-served-by: cache-bfi-krnt7300036-BFI
+  HDR x-cache: MISS
+  HDR x-cache-hits: 0
+  HDR x-timer: S1789344543.776001,VS0,VE67
+  HDR vary: Accept-Encoding
+  HDR age: 0
+  HDR content-length: 197
+  HDR 
+  BODY {"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}
+  index-href /internal/account -> 401  {"code":"unauthorized","message":"Invalid account ID header"}
+  index-href /internal/actions -> 401  {"code":"unauthorized","message":"Invalid account ID header"}
+
+=== 6. OpenAPI spec analysis (spec is public) ===
+
+=== 7. JS bundle mining: undocumented endpoints + the account header ===
+bundle URLs found: 6
+  downloaded runtime.792d018bb05d6396.js.js 62809B
+  downloaded initial.vendor.c76492f47a3fb186.js.js 1315078B
+  downloaded bootstrap.e547c566c43d514d.js.js 74149B
+  downloaded launchpad.81db6b35db7aa797.js.js 169802B
+  downloaded common.a3947a8747e8ace8.js.js 6375508B
+  downloaded loadUnauthenticated.94e97858587cde37.js.js 1534655B
+-- 7a. internal/private API paths referenced in bundles --
+   unique paths: 346
+/internal/accesses
+/internal/account
+/internal/account/accrued-invoices
+/internal/account/card
+/internal/account/join
+/internal/account/login
+/internal/account/login2
+/internal/account/owner
+/internal/account/resend-verification
+/internal/account/revoke-sessions
+/internal/account/saml
+/internal/account/saml-app-details
+/internal/account/scim
+/internal/account/scim/managed-teams
+/internal/account/session
+/internal/account/session/escalate
+/internal/account/session/mfa
+/internal/account/session/mfa-recovery
+/internal/account/signup/complete/${e}
+/internal/account/signup/facilitated-trial/${e}/validate
+/internal/account/signup/facilitated-trial/${t}
+/internal/account/signup/{token}/pending-invites
+/internal/account/signupv2
+/internal/account/subscription
+/internal/account/suggest-invites
+/internal/account/tokens
+/internal/account/verify-code
+/internal/ai-configs/{configKey}/completion
+/internal/ai/evaluations/providers
+/internal/applications/{applicationKey}/versions
+/internal/authorization/access-check/{service}/bulk
+/internal/billingv2/account/subscription
+/internal/billingv2/account/subscription/campaigns
+/internal/billingv2/account/subscription/opportunity/enterprise-seats
+/internal/billingv2/account/subscription/trial-extension/eligibility
+/internal/billingv2/account/subscription/usage
+/internal/billingv2/account/subscription/usage-status
+/internal/billingv2/card-added
+/internal/billingv2/card-setup-intent
+/internal/billingv2/plans
+/internal/billingv2/plans/${t}/limits
+/internal/billingv2/plans/{planType}/limits
+/internal/config/anonymous
+/internal/config/authenticated
+/internal/contact-us
+/internal/contact-us/forms/{formId}/public-submit
+/internal/contact-us/forms/{formId}/submit
+/internal/entitlements/ai-configs
+/internal/entitlements/release-guardian
+/internal/flags/{projectKey}
+/internal/forgot
+/internal/integrations/${e}/capabilities/approval/map-members
+/internal/invite/${n}/mfa
+/internal/invite/${t}
+/internal/login/mfa/confirm
+/internal/metric-data-sources
+/internal/plans
+/internal/profile
+/internal/profile/cancel-verification
+/internal/profile/context
+/internal/profile/following
+/internal/profile/mfa/confirm
+/internal/profile/mfa/disable
+/internal/profile/mfa/enable
+/internal/profile/notification-settings
+/internal/profile/password
+/internal/profile/resend-verification
+/internal/profile/selected-environments/{projectKey}
+/internal/profile/selected-view/{projKey}
+/internal/profile/shortcuts/{projectKey}
+/internal/projects
+/internal/projects/flag-count
+/internal/projects/{projKey}/assignment-data-sources
+/internal/projects/{projKey}/assignment-data-sources/{dataSourceKey}
+/internal/projects/{projKey}/assignment-data-sources/{dataSourceKey}/probe
+/internal/projects/{projKey}/datasets
+/internal/projects/{projKey}/datasets/{datasetId}
+/internal/projects/{projKey}/datasets/{datasetId}/download
+/internal/projects/{projKey}/datasets/{datasetId}/errors
+/internal/projects/{projKey}/datasets/{datasetId}/preview
+-- 7b. account-ID-ish header names in bundles --
+     15 organizationID
+     14 accountId
+      5 accountID
+      2 OrganizationSdkKeys
+      1 sandboxVisitorAccountId
+      1 sandboxVisitorAccountID
+      1 newRelicRUMAccountId
+      1 ld-account-id-verification-for-salesforce
+   custom header-looking strings:
+    400 "ld-api-version"
+      4 "x-height"
+      4 "x-attribsprefix"
+      4 "x-attribsnamespace"
+      3 "x-request-url"
+      3 "x-name"
+      3 "x-mode"
+      3 "x-http-method-override"
+      2 "x-systemid"
+      2 "x-publicid"
+      2 "x-launchdarkly-wrapper"
+      2 "x-launchdarkly-user-agent"
+      2 "x-launchdarkly-tags"
+      2 "x-launchdarkly-payload-id"
+      2 "x-launchdarkly-event-schema"
+      1 "x-storagemutated-1"
+      1 "x-remix-revalidate"
+      1 "x-remix-replace"
+      1 "x-remix-reload-document"
+      1 "x-newrelic-id"
+      1 "x-newrelic-app-data"
+      1 "x-ld-project-id"
+      1 "x-ld-envid"
+      1 "x-goog-signature"
+      1 "x-datadog-trace-id"
+      1 "x-datadog-sampling-priority"
+      1 "x-datadog-parent-id"
+      1 "x-datadog-origin"
+      1 "x-b3-traceid"
+      1 "x-b3-spanid"
+      1 "x-b3-sampled"
+      1 "ld-observability"
+      1 "ld-gonfalon-overrides"
+      1 "ld-flag-override"
+      1 "ld-example-"
+      1 "ld-data-source"
+      1 "ld-bypass-ua-tracking"
+      1 "ld-account-id-verification-for-salesforce"
+      1 "ld-account"
+-- 7c. context around 'announcements' calls --
+ item "+t.id+" was dropped."},onDragCancel(e){let{active:t}=e;return"Dragging was cancelled. Draggable item "+t.id+" was dropped."}};function j(e){var t;let n,{announcements:r=I,container:i,hiddenTextDescribedById:a,screenReaderInstructions:o=O}=e,{announce:s,announcement:l}=function(){let[e,t]=(0,E.useState)("");return{announce:(0
+-- 7d. context around '/internal/' call sites (should reveal the account header) --
+   snippets: 20
+g,...t?{target_selector:t}:{}}}),(0,o.mv5)().includes(e.name)&&(0,c.oN)().track(`Gonfalon frontend ${e.name}`,void 0,e.value)}var y=t(385398);let w=async e=>{let a=function(e){let{href:a}=window.location;if(!e.authenticated)return new URL("/internal/config/anonymous",a).toString();let t=(0,y.f)(new URL(a)),n=new URL("/internal/config/authenticated",a);return t.project&&n.searchParams.append("project",t.project),t.environment&&n.searchParams.append("environment",t.environment),n.toStrin
+a.WQ)(e))return o.FLAGS_IN_SEGMENT;return""}catch{return""}}},279914(e,t,n){"use strict";n.d(t,{_:()=>T});var r=n(91987),i=n(296908),a=n(995015),o=n(850851);async function s({apiVersion:e,...t},{headers:n,signal:r}={}){return(0,o.K)().GET("/internal/projects/{projKey}/environments/{envKey}/annotations/{traceId}/spans/{spanId}",{params:{path:t},headers:e?(0,a.lF)(n,{"LD-API-Version":e}):n,signal:r})}async function l({apiVersion:e,body:t,...n},{headers:r,signal:i}={}){return(0,o.K)().PAT
+{projKey}/environments/{envKey}/annotations/{traceId}/spans/{spanId}",{params:{path:n},body:t,headers:e?(0,a.lF)(r,{"LD-API-Version":e}):r,signal:i})}async function u({apiVersion:e,body:t,...n},{headers:r,signal:i}={}){return(0,o.K)().PUT("/internal/projects/{projKey}/environments/{envKey}/annotations/{traceId}/spans/{spanId}",{params:{path:n},body:t,headers:e?(0,a.lF)(r,{"LD-API-Version":e}):r,signal:i})}var c=n(935923),d=n(864133);let h=(0,n(963591).H)(s),f=(0,d.L)(u,{onSuccess:(e,{p
+6144(e,t,n){"use strict";n.d(t,{y:()=>C});var r=n(91987),i=n(439348),a=n(398678),o=n(456100),s=n(529864),l=n(700575),u=n(513483),c=n(995015),d=n(850851);async function h({apiVersion:e,body:t},{headers:n,signal:r}={}){return(0,d.K)().PATCH("/internal/profile/following",{params:{},body:t,headers:e?(0,c.lF)(n,{"LD-API-Version":e}):n,signal:r})}var f=n(935923),p=n(864133),m=n(848117);let g=(0,p.L)(h,{onSuccess:async()=>{let e=(0,f.S)();await e.invalidateQueries({queryKey:m.y.detail.queryKe
+",{className:(0,d.A)(h,f)}),(0,r.jsx)("span",{className:(0,d.A)(h,f)}),(0,r.jsx)("span",{className:(0,d.A)(h,f)})]});var m=n(771763),g=n(995015),v=n(850851);async function y({apiVersion:e,...t},{headers:n,signal:r}={}){return(0,v.K)().GET("/internal/projects/{projKey}/metric-data-sources/{dataSourceKey}/metric-events/{eventKind}/{eventKey}",{params:{path:t},headers:e?(0,g.lF)(n,{"LD-API-Version":e}):n,signal:r})}let b=(0,n(963591).H)(y);var A=n(564766),x=n(708739),E=n(580814),w=n(44965
+h:n,query:t},headers:(0,r.lF)(s,{"LD-API-Version":null!=e?e:a}),signal:l})}},482109(e,t,n){"use strict";n.d(t,{d:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,query:t,...n},{headers:o,signal:s}={}){return(0,i.K)().GET("/internal/projects/{projectKey}/flags/{flagKey}/monitor/contextKinds",{params:{path:n,query:t},headers:e?(0,r.lF)(o,{"LD-API-Version":e}):o,signal:s})}},503699(e,t,n){"use strict";n.d(t,{M:()=>o});var r=n(995015),i=n(850851);let a=n(382318).k.Beta;as
+ams:{path:n,query:t},headers:(0,r.lF)(s,{"LD-API-Version":null!=e?e:a}),signal:l})}},200191(e,t,n){"use strict";n.d(t,{v:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,...t},{headers:n,signal:o}={}){return(0,i.K)().GET("/internal/projects/{projKey}/datasets/{datasetId}",{params:{path:t},headers:e?(0,r.lF)(n,{"LD-API-Version":e}):n,signal:o})}},90972(e,t,n){"use strict";n.d(t,{_:()=>o});var r=n(995015),i=n(850851);function a(e){let t=new URLSearchParams;return e.expa
+query:t},querySerializer:a,headers:e?(0,r.lF)(s,{"LD-API-Version":e}):s,signal:l})}},524187(e,t,n){"use strict";n.d(t,{h:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,...t},{headers:n,signal:o}={}){return(0,i.K)().GET("/internal/projects/{projectKey}/environments/{environmentKey}/experiments/{experimentKey}/iterations/{iterationId}/traffic/timeseries",{params:{path:t},headers:e?(0,r.lF)(n,{"LD-API-Version":e}):n,signal:o})}},871958(e,t,n){"use strict";n.d(t,{m:()=>
+query:t},querySerializer:a,headers:e?(0,r.lF)(s,{"LD-API-Version":e}):s,signal:l})}},409644(e,t,n){"use strict";n.d(t,{_:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,...t},{headers:n,signal:o}={}){return(0,i.K)().GET("/internal/projects/{projKey}/flag-templates",{params:{path:t},headers:e?(0,r.lF)(n,{"LD-API-Version":e}):n,signal:o})}},681422(e,t,n){"use strict";n.d(t,{q:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e}={},{headers:t,signal:n}={}
+,querySerializer:a,headers:e?(0,r.lF)(s,{"LD-API-Version":e}):s,signal:l})}},249727(e,t,n){"use strict";n.d(t,{H:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,query:t,...n},{headers:o,signal:s}={}){return(0,i.K)().GET("/internal/projects/{projectKey}/metrics/{metricKey}/event-instances",{params:{path:n,query:t},headers:e?(0,r.lF)(o,{"LD-API-Version":e}):o,signal:s})}},355138(e,t,n){"use strict";n.d(t,{A:()=>a});var r=n(995015),i=n(850851);async function a({apiVersi
+n,query:t},querySerializer:o,headers:e?(0,r.lF)(a,{"LD-API-Version":e}):a,signal:l})}},695211(e,t,n){"use strict";n.d(t,{J:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e}={},{headers:t,signal:n}={}){return(0,i.K)().GET("/internal/account/card",{params:{},headers:e?(0,r.lF)(t,{"LD-API-Version":e}):t,signal:n})}},335194(e,t,n){"use strict";n.d(t,{K:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,body:t},{headers:n,signal:o}={}){return(0,i.K)().POST(
+{params:{},body:t,headers:e?(0,r.lF)(n,{"LD-API-Version":e}):n,signal:o})}},102305(e,t,n){"use strict";n.d(t,{f:()=>a});var r=n(995015),i=n(850851);async function a({apiVersion:e,header:t,...n},{headers:o,signal:s}={}){return(0,i.K)().GET("/internal/projects/{projectKey}/environments/{environmentKey}/experiments/{experimentKey}/files/{fileId}",{params:{path:n,header:t},headers:e?(0,r.lF)(o,{"LD-API-Version":e}):o,signal:s})}},803273(e,t,n){"use strict";n.d(t,{J:()=>o});var r=n(995015),
+st/data",{params:{},body:t,headers:e?(0,r.lF)(n,{"LD-API-Version":e}):n,signal:o})}},185504(e,t,n){"use stri-- 7e. any literal header-ish names containing account/tenant/org (case-insensitive) --
+-- 7f. context around internal header names + sensitive internal routes --
+   'ld-account' -> 3 snippet(s)
+   'gonfalon' -> 4 snippet(s)
+   'flag-override' -> 1 snippet(s)
+   'access-check' -> 3 snippet(s)
+   'session/escalate' -> 1 snippet(s)
+   'x-ld-envid' -> 1 snippet(s)
+   'x-ld-project-id' -> 0 snippet(s)
+   'organization-verifications' -> 1 snippet(s)
+   'role-presets-bundle' -> 1 snippet(s)
+   'entitlements' -> 3 snippet(s)
+   'config/anonymous' -> 1 snippet(s)
+   'upload-url' -> 1 snippet(s)
+   'assignment-data-sources' -> 3 snippet(s)
+   'LD-API-Version' -> 4 snippet(s)
+   'document.cookie' -> 4 snippet(s)
+   'config/authenticated' -> 1 snippet(s)
+
+=== 8. full bundle mining via the PUBLIC asset manifest (no login needed) ===
+  asset path: https://static.launchdarkly.com/app/s/ld/   manifest: manifest.5e1f8235c.json
+  manifest chunk URLs: 60
+  chunks downloaded: 60, total 9.4M
+  total /internal/ paths now known: 142
+  total /api/v2/ paths now known:   204
+-- 8b. how 'ld-account' is used (verbatim snippets) --
+,!1),nU=o("enable-judge-model-picker",!1),nL=o("enable-judges-in-use",!1),nF=o("enable-launchlitely",!1),nN=o("enable-launchpad-colors-for-pa-charts",!1),nz=o("enable-launchpad-components-pa-cohort-definition",!1),nO=o("ld-account-id-verification-for-salesforce",!1),nP=o("enable-logout-url-for-saml-configs",!1),nD=o("enable-manually-tracked-ddrum-views",!1),nH=o("enable-marketplace-billing",!1),nB=o("enable-marketplace-welcome-survey",!1),n$=o("e
+let n={get:()=>null,set:()=>{},remove:()=>{},subscribe:()=>()=>{}}},729747(e,t,r){"use strict";r.d(t,{t:()=>n});let n="localStorage"},864071(e,t,r){"use strict";r.d(t,{M:()=>i});var n=r(398678);function i(){var e;return`ld-account-${null!=(e=(0,n.lS)())?e:"anonymous"}`}},462463(e,t,r){"use strict";r.d(t,{W:()=>u});var n=r(116883),i=r(864071);function a({key:e,oldValue:t,newValue:r,storage:n}){if(t===r)return;let i=new StorageEvent("storage",{key:
+throw Error("AccountLocalStorage must be initialized with an account ID");n.clear()}function c(){if(!n)throw Error("AccountLocalStorage must be initialized with an account ID");return new o(n.load(s))}function d(e){n=a(`ld-account-${e}`);let t=a("ld-account"),r=t.load();r&&(n.save(r),t.clear())}},668890(e,t,r){"use strict";r.d(t,{FL:()=>o,ME:()=>s,bB:()=>l,nM:()=>a,yD:()=>i});var n=r(101495);function i(e,t){return n.LV.post("/internal/account/res
+
+-- 8c. gonfalon / flag-override snippets --
+app.launchdarkly.com","pri.observability.ld-stg.launchdarkly.com","product-analytics-api.ld-stg.launchdarkly.com","product-analytics-api.app.ld.catamorphic.com","product-analytics-api.app.launchdarkly.com"],serviceName:"gonfalon-web",environment:(0,r.qh)(),version:(0,r.BR)(),backendUrl:(0,r.mP)(),otel:{otlpEndpoint:(0,r.Bw)()},contextFriendlyName:v,flagExposureDedupeWindowMillis:3e5}),new s.A({privacySetting:"none",serviceName:"gonfalon-web",en
+textFriendlyName:v,enableCanvasRecording:!0,samplingStrategy:{canvasManualSnapshot:1,canvasMaxSnapshotDimension:720},maskTextClass:"fs-exclude"}),d.O,d.I]:[d.O,d.I],(t=(0,m.U)((0,r.Eh)(),(0,r.Ad)(),{applicationInfo:{id:"gonfalon-frontend",version:(0,r.BR)()},baseUri:(0,r.kM)(),streamUri:(0,r.Zs)(),eventsUri:(0,r.Iu)(),streaming:!1,sendEvents:(0,r.uJ)(),inspectors:e,plugins:a,capacity:(0,r.IH)()||100,maxCachedContexts:0})).start({bootstrap:(0,r.
+app.launchdarkly.com","pri.observability.ld-stg.launchdarkly.com","product-analytics-api.ld-stg.launchdarkly.com","product-analytics-api.app.ld.catamorphic.com","product-analytics-api.app.launchdarkly.com"],serviceName:"gonfalon-web",environment:(0,r.qh)(),version:(0,r.BR)(),backendUrl:(0,r.mP)(),otel:{otlpEndpoint:(0,r.Bw)()},contextFriendlyName:g,flagExposureDedupeWindowMillis:3e5}),new s.A({privacySetting:"none",serviceName:"gonfalon-web",en
+,contextFriendlyName:g,enableCanvasRecording:!0,samplingStrategy:{canvasManualSnapshot:1,canvasMaxSnapshotDimension:720},maskTextClass:"fs-exclude"}),d.O,d.I]:[d.O,d.I],n=(0,c.n_)((0,r.Eh)(),(0,r.Ad)(),{application:{id:"gonfalon-frontend",version:(0,r.BR)()},baseUrl:(0,r.kM)(),streamUrl:(0,r.Zs)(),eventsUrl:(0,r.Iu)(),streaming:!1,sendEvents:(0,r.uJ)(),sendEventsOnlyForVariation:(0,r.uJ)(),bootstrap:(0,r.l5)(),hash:(0,r.QG)(),inspectors:e,event
+(0,s.oc)(),clientToken:(0,s.pw)(),sessionSampleRate:(0,o.jKl)(),sessionReplaySampleRate:(0,o.AN8)(),env:(0,s.qh)(),version:(0,s.BR)(),site:(0,s.OD)(),trackUserInteractions:(0,o.vD5)(),trackResources:(0,o.nFZ)(),service:"gonfalon",trackViewsManually:(0,o.DRk)(),enableExperimentalFeatures:(0,o.k$z)()?["feature_flags"]:void 0,allowedTracingUrls:(0,o.QH0)()?[(0,s.wW)()]:void 0,beforeSend:(e,a)=>{"error"===e.type&&void 0!==window.FS&&"function"==typ
+r:n},body:t,headers:e?(0,a.lF)(i,{"LD-API-Version":e}):i,signal:l})}var l=n(485668);let u=(0,i.w)({name:"access-check-runner",bufferDuration:500,runner:async e=>(0,l.W)(s({header:{Authorization:document.cookie},service:"gonfalon",body:e})),resolver:(e,t)=>e.find(e=>e.action===t.action&&e.resource===t.resource),batching:{maxBatchSize:25,resultMerger:e=>e.flatMap(e=>e)}}),c=(0,r.G)(u)},672602(e,t,n){"use strict";n.d(t,{hI:()=>L,ks:()=>M,_n:()=>N,
+ this.eventStore.subscribe(e)}clearEvents(){this.eventStore.clear()}destroy(){this.eventStore.destroy()}}class l{debugOverride;config;ldClient=null;constructor(e={}){this.config={storageNamespace:e.storageNamespace??"ld-flag-override"}}getMetadata(){return{name:"FlagOverridePlugin"}}getHooks(e){return[]}register(e){this.ldClient=e}registerDebug(e){this.debugOverride=e,this.loadExistingOverrides()}loadExistingOverrides(){if(!this.debugOverride)return
+18M	ci-results/run-10
+route-matrix done -> ci-results/run-10

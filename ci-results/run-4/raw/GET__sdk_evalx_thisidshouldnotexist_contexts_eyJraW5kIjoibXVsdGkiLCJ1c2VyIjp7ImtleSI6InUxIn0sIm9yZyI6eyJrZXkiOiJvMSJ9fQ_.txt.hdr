@@ -1,0 +1,16 @@
+HTTP/2 401 
+content-type: application/json
+access-control-allow-origin: *
+access-control-max-age: 3600
+access-control-allow-methods: OPTIONS, GET
+access-control-allow-headers: Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-Requested-With, X-LD-Private, X-LD-AccountId, X-LD-EnvId, X-LD-PrjId, X-LaunchDarkly-Event-Schema, X-LaunchDarkly-User-Agent, X-LaunchDarkly-Wrapper, LD-API-Version, X-LaunchDarkly-Tags
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 23:07:06 GMT
+via: 1.1 varnish
+x-served-by: cache-iad-khef600070-IAD, cache-iad-kcgs7200050-IAD
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789168026.123518,VS0,VE30
+age: 0
+content-length: 0
+

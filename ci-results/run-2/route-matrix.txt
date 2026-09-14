@@ -1,0 +1,210 @@
+=== 1. app-host SDK polling routes (in-scope host, client-side ID in path) ===
+GET /sdk/evalx/thisidshouldnotexist/contexts/AAAA    400      98B  {"code":"invalid_request","message":"couldn't parse user JSON: expected value at line 1 column 1"}
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/contexts/e30     400      84B  {"code":"invalid_request","message":"couldn't parse user JSON: missing field `key`"}
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoibXVsdGkiLCJ1c2VyIjp7ImtleSI6InUxIn0sIm9yZyI6eyJrZXkiOiJvMSJ9fQ 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ?withReasons=true 401       0B  
+GET /sdk/evalx/thisidshouldnotexist/users/testuser   400      98B  {"code":"invalid_request","message":"couldn't parse user JSON: expected value at line 1 column 1"}
+GET /msdk/evalx/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+GET /msdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      47B  {"code":"not_found","message":"Page not found"}
+GET /sdk/goals/thisidshouldnotexist                  404       0B  
+GET /sdk/evalx/x/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 401       0B  
+
+=== 2. stream.launchdarkly.com route existence (in scope) ===
+GET stream/all                                       401       0B  
+GET stream/all?filter=x                              401       0B  
+GET stream/eval/thisidshouldnotexist/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404       0B  
+GET stream/eval/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404       0B  
+GET stream/ping/x                                    404       0B  
+GET stream/mping                                     401       0B  
+GET stream/meval/AAAA                                401       0B  
+GET stream/msdk                                      404      19B  404 page not found 
+GET stream/msdk/bulk                                 404      19B  404 page not found 
+GET stream/bulk_eval/contexts                        404      19B  404 page not found 
+GET stream/sdk/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/msdk/evalx/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/evalx/thisidshouldnotexist/contexts/eyJraW5kIjoidXNlciIsImtleSI6InRlc3QifQ 404      19B  404 page not found 
+GET stream/v1/all                                    404      19B  404 page not found 
+GET stream/all/x                                     404      19B  404 page not found 
+
+=== 3. events.launchdarkly.com (in scope) ===
+GET events/                                          499       0B  
+GET events/events                                    404       0B  
+GET events/events/identify                           404       0B  
+GET events/events/bulk                               404       0B  
+GET events/bulk                                      404       0B  
+GET events/mobile                                    404       0B  
+GET events/events/debug                              404       0B  
+GET events/diagnostic                                404       0B  
+POST events/identify []                              404       0B  
+POST events/bulk []                                  404       0B  
+
+=== 4. app root subroutes incl. /internal/ and /private/ ===
+GET /                                                200    4551B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.422453b0d.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Sign in</title>  
+GET /api/v2                                          301      43B  <a href="/api/v2/">Moved Permanently</a>.  
+GET /api/v2/                                         200     730B  {"links":{"account":{"href":"/api/v2/account","type":"application/json"},"flag-statuses":{"href":"/api/v2/flag-statuses","type":"application/json"},"flags":{"href":"/api/v2/flags","type":"application/json"},"integrations":{"href":"/api/v2/integrations","type":"application/json"},"members":{"href":"/
+GET /api/v2/openapi.json                             200  2985850B  {   "openapi": "3.0.3",   "info": {     "title": "LaunchDarkly REST API",     "description": "This documentation describes LaunchDarkly's REST API. To access the complete OpenAPI spec directly, use [Get OpenAPI spec](https://launchdarkly.com/docs/api/other/get-openapi-spec).\n\nTo learn how to use L
+GET /api/v2/ips                                      404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/public-ips                               404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/caller-identity                          401      56B  {"code":"unauthorized","message":"invalid access token"}
+GET /api/v2/announcements                            401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /api/v2/projects                                 401      61B  {"code":"unauthorized","message":"Invalid account ID header"}
+GET /internal                                        301      45B  <a href="/internal/">Moved Permanently</a>.  
+GET /internal/                                       200     197B  {"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}
+GET /api/v2/internal                                 404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private                                         404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private/                                        404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /api/v2/private                                  404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /private/announcements                           404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /sdk                                             404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /msdk                                            404    4339B    <!DOCTYPE html> <html lang="en">   <head>           <meta charset="utf-8">          <title>Not found</title>     <meta name="description" content="LaunchDarkly">     <meta name="viewport" content="width=device-width">      <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com
+GET /login                                           200    4551B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.422453b0d.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Sign in</title>  
+GET /signup                                          200    4699B    <!DOCTYPE html> <html lang="en"       data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"       data-manifest-name="manifest.422453b0d.json"       data-bundle="unauthenticated"       data-is-unauthenticated>   <head>           <meta charset="utf-8">          <title>Create Your Free 
+
+=== 5. H4: /api/v2/announcements undocumented account-ID header probe ===
+
+=== 6. OpenAPI spec analysis (spec is public) ===
+
+=== 7. JS bundle mining: undocumented endpoints + the account header ===
+bundle URLs found: 6
+  downloaded runtime.b66d1e177345a3d3.js.js 62809B
+  downloaded initial.vendor.c76492f47a3fb186.js.js 1315078B
+  downloaded bootstrap.e547c566c43d514d.js.js 74149B
+  downloaded launchpad.81db6b35db7aa797.js.js 169802B
+  downloaded common.b3e11cfac18e5499.js.js 6375467B
+  downloaded loadUnauthenticated.94e97858587cde37.js.js 1534655B
+-- 7a. internal/private API paths referenced in bundles --
+   unique paths: 346
+/internal/accesses
+/internal/account
+/internal/account/accrued-invoices
+/internal/account/card
+/internal/account/join
+/internal/account/login
+/internal/account/login2
+/internal/account/owner
+/internal/account/resend-verification
+/internal/account/revoke-sessions
+/internal/account/saml
+/internal/account/saml-app-details
+/internal/account/scim
+/internal/account/scim/managed-teams
+/internal/account/session
+/internal/account/session/escalate
+/internal/account/session/mfa
+/internal/account/session/mfa-recovery
+/internal/account/signup/complete/${e}
+/internal/account/signup/facilitated-trial/${e}/validate
+/internal/account/signup/facilitated-trial/${t}
+/internal/account/signup/{token}/pending-invites
+/internal/account/signupv2
+/internal/account/subscription
+/internal/account/suggest-invites
+/internal/account/tokens
+/internal/account/verify-code
+/internal/ai-configs/{configKey}/completion
+/internal/ai/evaluations/providers
+/internal/applications/{applicationKey}/versions
+/internal/authorization/access-check/{service}/bulk
+/internal/billingv2/account/subscription
+/internal/billingv2/account/subscription/campaigns
+/internal/billingv2/account/subscription/opportunity/enterprise-seats
+/internal/billingv2/account/subscription/trial-extension/eligibility
+/internal/billingv2/account/subscription/usage
+/internal/billingv2/account/subscription/usage-status
+/internal/billingv2/card-added
+/internal/billingv2/card-setup-intent
+/internal/billingv2/plans
+/internal/billingv2/plans/${t}/limits
+/internal/billingv2/plans/{planType}/limits
+/internal/config/anonymous
+/internal/config/authenticated
+/internal/contact-us
+/internal/contact-us/forms/{formId}/public-submit
+/internal/contact-us/forms/{formId}/submit
+/internal/entitlements/ai-configs
+/internal/entitlements/release-guardian
+/internal/flags/{projectKey}
+/internal/forgot
+/internal/integrations/${e}/capabilities/approval/map-members
+/internal/invite/${n}/mfa
+/internal/invite/${t}
+/internal/login/mfa/confirm
+/internal/metric-data-sources
+/internal/plans
+/internal/profile
+/internal/profile/cancel-verification
+/internal/profile/context
+/internal/profile/following
+/internal/profile/mfa/confirm
+/internal/profile/mfa/disable
+/internal/profile/mfa/enable
+/internal/profile/notification-settings
+/internal/profile/password
+/internal/profile/resend-verification
+/internal/profile/selected-environments/{projectKey}
+/internal/profile/selected-view/{projKey}
+/internal/profile/shortcuts/{projectKey}
+/internal/projects
+/internal/projects/flag-count
+/internal/projects/{projKey}/assignment-data-sources
+/internal/projects/{projKey}/assignment-data-sources/{dataSourceKey}
+/internal/projects/{projKey}/assignment-data-sources/{dataSourceKey}/probe
+/internal/projects/{projKey}/datasets
+/internal/projects/{projKey}/datasets/{datasetId}
+/internal/projects/{projKey}/datasets/{datasetId}/download
+/internal/projects/{projKey}/datasets/{datasetId}/errors
+/internal/projects/{projKey}/datasets/{datasetId}/preview
+-- 7b. account-ID-ish header names in bundles --
+     15 organizationID
+     14 accountId
+      5 accountID
+      2 OrganizationSdkKeys
+      1 sandboxVisitorAccountId
+      1 sandboxVisitorAccountID
+      1 newRelicRUMAccountId
+      1 ld-account-id-verification-for-salesforce
+   custom header-looking strings:
+    400 "ld-api-version"
+      4 "x-height"
+      4 "x-attribsprefix"
+      4 "x-attribsnamespace"
+      3 "x-request-url"
+      3 "x-name"
+      3 "x-mode"
+      3 "x-http-method-override"
+      2 "x-systemid"
+      2 "x-publicid"
+      2 "x-launchdarkly-wrapper"
+      2 "x-launchdarkly-user-agent"
+      2 "x-launchdarkly-tags"
+      2 "x-launchdarkly-payload-id"
+      2 "x-launchdarkly-event-schema"
+      1 "x-storagemutated-1"
+      1 "x-remix-revalidate"
+      1 "x-remix-replace"
+      1 "x-remix-reload-document"
+      1 "x-newrelic-id"
+      1 "x-newrelic-app-data"
+      1 "x-ld-project-id"
+      1 "x-ld-envid"
+      1 "x-goog-signature"
+      1 "x-datadog-trace-id"
+      1 "x-datadog-sampling-priority"
+      1 "x-datadog-parent-id"
+      1 "x-datadog-origin"
+      1 "x-b3-traceid"
+      1 "x-b3-spanid"
+      1 "x-b3-sampled"
+      1 "ld-observability"
+      1 "ld-gonfalon-overrides"
+      1 "ld-flag-override"
+      1 "ld-example-"
+      1 "ld-data-source"
+      1 "ld-bypass-ua-tracking"
+      1 "ld-account-id-verification-for-salesforce"
+      1 "ld-account"
+-- 7c. context around 'announcements' calls --
+ item "+t.id+" was dropped."},onDragCancel(e){let{active:t}=e;return"Dragging was cancelled. Draggable item "+t.id+" was dropped."}};function j(e){var t;let n,{announcements:r=I,container:i,hiddenTextDescribedById:a,screenReaderInstructions:o=O}=e,{announce:s,announcement:l}=function(){let[e,t]=(0,E.useState)("");return{announce:(0
+16M	ci-results/run-2
+route-matrix done -> ci-results/run-2

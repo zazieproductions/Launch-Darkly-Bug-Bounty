@@ -1,0 +1,9 @@
+HTTP/2 404 
+access-control-allow-headers: Accept,Content-Type,Content-Length,Accept-Encoding,Cache-Control,X-Requested-With,X-LaunchDarkly-User-Agent,X-LaunchDarkly-Wrapper,X-LaunchDarkly-Instance-Id
+access-control-allow-methods: GET,OPTIONS
+access-control-allow-origin: *
+access-control-max-age: 300
+ld-region: us-east-1
+strict-transport-security: max-age=31536000; includeSubDomains
+date: Fri, 11 Sep 2026 22:49:11 GMT
+

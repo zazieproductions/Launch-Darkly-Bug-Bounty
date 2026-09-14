@@ -1,0 +1,110 @@
+ 
+<!DOCTYPE html>
+<html lang="en"
+      data-static-asset-path="https://static.launchdarkly.com/app/s/ld/"
+      data-manifest-name="manifest.6d75a3b61.json"
+      data-bundle="unauthenticated"
+      data-is-unauthenticated>
+  <head>
+    
+
+    <meta charset="utf-8">
+    
+    <title>Create Your Free Account | LaunchDarkly</title>
+    <meta name="description" content="Your Developer account is free forever, and includes 14 days of unlimited access to all of LaunchDarkly&#39;s capabilities.">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    
+
+    
+
+    
+      <link rel="preload" as="fetch" type="application/json" href="/internal/config/anonymous" crossorigin>
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/runtime.5b656463e552a645.js">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/initial.vendor.c76492f47a3fb186.js">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/bootstrap.e547c566c43d514d.js">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/launchpad.81db6b35db7aa797.js">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/common.a3947a8747e8ace8.js">
+      <link rel="preload" as="script" href="https://static.launchdarkly.com/app/s/ld/loadUnauthenticated.94e97858587cde37.js">
+      <link rel="preload" as="style" href="https://static.launchdarkly.com/app/s/ld/bootstrap.860c6c6e152d5d78.css">
+      
+      <link rel="preload" as="style" href="https://static.launchdarkly.com/app/s/ld/loadUnauthenticated.58584bc22ce74bca.css">
+    
+
+    <link rel="icon" type="image/svg+xml" href="https://static.launchdarkly.com/app/s/img/favicon-osmo-prod.svg">
+    <link rel="icon" type="image/png" href="https://static.launchdarkly.com/app/s/img/favicon-osmo-prod.png">
+
+    
+      <link rel="preload" href="https://static.launchdarkly.com/app/s/ld/inter.var-subset.woff2" as="font" type="font/woff2" crossorigin>
+      
+      <link rel="preload" href="https://static.launchdarkly.com/app/s/ld/Audimat3000-Regulier.var-subset.woff2" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="https://static.launchdarkly.com/app/s/ld/SohneBreit-Buch.var-subset.woff2" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="https://static.launchdarkly.com/app/s/ld/SohneMono-Buch.var-subset.woff2" as="font" type="font/woff2" crossorigin>
+      
+      <link rel="preload" href="https://static.launchdarkly.com/app/s/ld/Sora.var-subset.woff2" as="font" type="font/woff2" crossorigin>
+      <style data-fonts-container>
+        @font-face {
+          font-family: inter;
+          src: url('https://static.launchdarkly.com/app/s/ld/inter.var-subset.woff2') format('woff2');
+          font-display: swap;
+          font-weight: 300 700;
+        }
+        @font-face {
+          font-family: "Audimat 3000 Regulier";
+          src: url('https://static.launchdarkly.com/app/s/ld/Audimat3000-Regulier.var-subset.woff2') format('woff2');
+          font-display: swap;
+          font-weight: 400;
+          -webkit-font-smoothing: antialiased;
+        }
+        @font-face {
+          font-family: "SohneBreit-Buch";
+          src: url('https://static.launchdarkly.com/app/s/ld/SohneBreit-Buch.var-subset.woff2') format('woff2');
+          font-display: swap;
+          font-weight: 400;
+          -webkit-font-smoothing: antialiased;
+        }
+        @font-face {
+          font-family: "SohneMono-Buch";
+          src: url('https://static.launchdarkly.com/app/s/ld/SohneMono-Buch.var-subset.woff2') format('woff2');
+          font-display: swap;
+          font-weight: 400;
+          -webkit-font-smoothing: antialiased;
+        }
+        @font-face {
+          font-family: "Sora";
+          src: url('https://static.launchdarkly.com/app/s/ld/Sora.var-subset.woff2') format('woff2');
+          font-display: swap;
+          font-weight: 100 800;
+          -webkit-font-smoothing: antialiased;
+        }
+      </style>
+      <link rel="stylesheet" href="https://static.launchdarkly.com/app/s/ld/bootstrap.860c6c6e152d5d78.css">
+      
+      <script defer src="https://static.launchdarkly.com/app/s/ld/runtime.5b656463e552a645.js"></script>
+      <script defer src="https://static.launchdarkly.com/app/s/ld/initial.vendor.c76492f47a3fb186.js"></script>
+      <script defer src="https://static.launchdarkly.com/app/s/ld/bootstrap.e547c566c43d514d.js"></script>
+    
+
+  </head>
+  <body>
+
+
+<div class="ld-container"
+
+  
+  data-scope=""
+
+  
+
+  
+></div>
+
+
+
+</body>
+</html>
+
+ 

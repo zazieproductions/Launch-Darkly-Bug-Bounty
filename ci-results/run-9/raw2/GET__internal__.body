@@ -1,0 +1,1 @@
+{"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}

@@ -1,0 +1,72 @@
+# PoC — js-core fails to redact private attributes whose name starts with "/" or "~"
+js-core source : sdk/js-core/packages/shared/common/src/AttributeReference.ts (run through Node type-stripping, v22.22.3)
+node-server-sdk: sdk/node-server-sdk/attribute_reference.js + sdk/node-server-sdk/context_filter.js (v7, real code)
+
+## 1. The parsing divergence (both are the REAL implementations)
+  Does the reference resolve the attribute it names?
+  reference            js-core .get(target)   node-server-sdk get(target,ref)  agree?
+  /~1ssn               undefined              "V1"                             false
+  /~0secret            undefined              "V2"                             false
+  /a~1b                "V3"                   "V3"                             true
+  /profile/~1ssn       undefined              "V4"                             false
+  email                "V5"                   "V5"                             true
+
+  js-core parsed components (real code):
+    /~1ssn               -> ["~1ssn"]
+    /~0secret            -> ["~0secret"]
+    /a~1b                -> ["a/b"]
+    /profile/~1ssn       -> ["profile","~1ssn"]
+    (expected for /~1ssn: ["/ssn"];  for /profile/~1ssn: ["profile","/ssn"])
+
+  js-core isValidReference("/a~|b") : true   (spec: "~" followed by anything other than 0/1 is INVALID)
+  node-server-sdk isValidReference("/a~|b") : true
+  -> both JS SDKs accept an invalid escape because the char class is written [^0|^1]
+     (a literal "|" and "^" inside a negated class); Go/Ruby/Python reject it.
+
+## 2. End-to-end: is the private attribute actually redacted?
+  Context: a user with a nested attribute literally named "/ssn" plus a control attribute.
+  context            : {"kind":"user","key":"u-123","email":"user@example.com","/ssn":"123-45-6789","~secret":"tilde-value","a/b":"slash-in-middle","profile":{"/ssn":"987-65-4321","city":"Asheville"},"_meta":{"privateAttributes":["/~1ssn","/~0secret","/a~1b","/profile/~1ssn"]}}
+  private references : ["/~1ssn","/~0secret","/a~1b","/profile/~1ssn"]
+
+  node-server-sdk v7 (real ContextFilter) output:
+    {"_meta":{"redactedAttributes":["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]},"profile":{"city":"Asheville"},"email":"user@example.com","key":"u-123","kind":"user"}
+
+  js-core (real AttributeReference + verbatim ContextFilter loop) output:
+    {"_meta":{"redactedAttributes":["/a~1b"]},"profile":{"city":"Asheville","/ssn":"987-65-4321"},"~secret":"tilde-value","/ssn":"123-45-6789","email":"user@example.com","key":"u-123","kind":"user"}
+
+  per-attribute result:
+    attribute                        private reference          js-core
+    "/ssn" (top level)                 /~1ssn                   LEAKED -> "123-45-6789"
+    "~secret"                          /~0secret                LEAKED -> "tilde-value"
+    "a/b" (~ not first char)           /a~1b                    REDACTED
+    profile."/ssn" (nested)            /profile/~1ssn           LEAKED -> "987-65-4321"
+
+  same attributes through node-server-sdk v7:
+    attribute                        private reference          node-server-sdk
+    "/ssn" (top level)                 /~1ssn                   REDACTED
+    "~secret"                          /~0secret                REDACTED
+    "a/b" (~ not first char)           /a~1b                    REDACTED
+    profile."/ssn" (nested)            /profile/~1ssn           REDACTED
+
+  note: node-server-sdk v7 redacts by comparing the ESCAPED pointer path of each attribute
+        (join(ptr, processEscapeCharacters(key))) with the reference string, so it is immune
+        to the unescape bug; js-core compares UNESCAPED components, so it depends on unescape().
+
+## 3. Why it is silent
+  js-core _meta.redactedAttributes      : ["/a~1b"]
+  node-server-sdk _meta.redactedAttributes: ["/a~1b","/profile/~1ssn","/~0secret","/~1ssn"]
+  js-core reports nothing redacted, so the customer sees no hint that their private-attribute
+  configuration is not taking effect; the raw values travel in identify/index/debug events.
+
+## 4. Affected SDKs (all consume js-core @launchdarkly/js-sdk-common)
+  browser, react-client-sdk, vue-client-sdk, angular-client-sdk, node-client-sdk,
+  react-native-sdk, js-client-sdk and the edge/serverless SDKs packaged from js-core
+  (packages/shared/sdk-server), i.e. every SDK that formats contexts into events.
+
+## 5. Fix
+  AttributeReference.ts:18  ->  return ref.indexOf('~') >= 0 ? ... : ref;
+  (or `ref.includes('~')`), matching node-server-sdk/attribute_reference.js:18,
+  python-server-sdk/ldclient/impl/model/attribute_ref.py:96, ruby-server-sdk reference.rb and
+  go-sdk-common/ldattr/ref.go:252. Also tighten the validation char class [^0|^1] -> [^01].
+
+RESULT: 3 of 4 attributes LEAKED through js-core: ["\"/ssn\" (top level)","\"~secret\"","profile.\"/ssn\" (nested)"]

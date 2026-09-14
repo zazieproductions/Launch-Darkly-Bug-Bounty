@@ -1,0 +1,12 @@
+HTTP/2 401 
+content-type: application/json
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 22:49:10 GMT
+via: 1.1 varnish
+x-served-by: cache-bfi-krnt7300062-BFI, cache-bfi-krnt7300052-BFI
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789166950.269595,VS0,VE138
+age: 0
+content-length: 0
+

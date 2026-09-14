@@ -1,0 +1,13 @@
+HTTP/2 404 
+content-type: text/html; charset=utf-8
+strict-transport-security: max-age=31536000; includeSubDomains
+accept-ranges: bytes
+date: Fri, 11 Sep 2026 23:36:46 GMT
+via: 1.1 varnish
+x-served-by: cache-bur-kbur8200064-BUR
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789169806.468034,VS0,VE252
+vary: Accept-Encoding
+age: 0
+

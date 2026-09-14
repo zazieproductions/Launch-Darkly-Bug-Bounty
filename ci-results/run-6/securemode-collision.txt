@@ -1,0 +1,8 @@
+=== F-002 live check: canonicalKey collision vs secure-mode hash ===
+  clientSideId          : 5866f3891cd8810a42ce5281
+  secureModeContextHash : f5b4e0f2339419fdb4f611f60bb2d3568f1ab85c3da60a13d1e8dee8403cded5
+  signed dogfoodContext : {"kind":"multi","session":{"key":"57faf00b-6f53-44ed-b8a1-73669fcc6d62","anonymous":true},"user":{"key":"57faf00b-6f53-44ed-b8a1-73669fcc6d62","name":"","dogfoodCanary":false,"anonymous":true}}
+  canonicalKey(signed)  : session:57faf00b-6f53-44ed-b8a1-73669fcc6d62:user:57faf00b-6f53-44ed-b8a1-73669fcc6d62
+  canonicalKey(colliding single-kind user context): session:57faf00b-6f53-44ed-b8a1-73669fcc6d62:user:57faf00b-6f53-44ed-b8a1-73669fcc6d62
+  COLLISION (local)     : True
+  no plan produced — aborting

@@ -10,13 +10,12 @@ Paste the raw responses back to the agent — especially the ⭐ ones.
 # A1 ⭐ — Announcements "public" endpoints (H4: are they really unauth?)
 curl -sS -i 'https://app.launchdarkly.com/api/v2/announcements'
 
-# A2 ⭐ — OPTIONAL write test. Only if you're OK creating ONE clearly-marked
-# announcement in whatever scope an unauth POST lands in. If it returns 2xx,
-# that's the finding — screenshot it, then DELETE it:
-curl -sS -i -X POST 'https://app.launchdarkly.com/api/v2/announcements' \
-  -H 'Content-Type: application/json' \
-  -d '{"message":"bugcrowd test announcement - safe to delete"}'
-# then: curl -sS -i -X DELETE 'https://app.launchdarkly.com/api/v2/announcements/<id>'
+# A2 — DO NOT RUN. Unauth announcement writes were removed from the plan on 2026-09-11.
+# Live probing showed the unauth GET is gated by an undocumented "account ID header"
+# (see recon/live-probe-results.md O1). Announcements render as in-app banners for ALL
+# customers with severity=critical and scheduling support, so an unauthenticated POST is a
+# service-wide content change — the program says stop and report, not exercise. If unauth
+# READ is confirmed, report it and describe the write risk without testing it.
 
 # A3 — caller identity, no auth (expect 401 JSON; record error shape)
 curl -sS -i 'https://app.launchdarkly.com/api/v2/caller-identity'

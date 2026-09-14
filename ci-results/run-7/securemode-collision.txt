@@ -1,0 +1,27 @@
+=== F-002 live check: canonicalKey collision vs secure-mode hash ===
+  clientSideId          : 5866f3891cd8810a42ce5281
+  secureModeContextHash : 913c2b475a709f07681b497b578d573581edb31073e22bb434ce1cc77ff23e00
+  signed dogfoodContext : {"kind":"multi","session":{"key":"fac2c19b-dc5e-455a-b1b0-847a24c36b41","anonymous":true},"user":{"key":"fac2c19b-dc5e-455a-b1b0-847a24c36b41","name":"","dogfoodCanary":false,"anonymous":true}}
+  canonicalKey(signed)  : session:fac2c19b-dc5e-455a-b1b0-847a24c36b41:user:fac2c19b-dc5e-455a-b1b0-847a24c36b41
+  canonicalKey(colliding single-kind user context): session:fac2c19b-dc5e-455a-b1b0-847a24c36b41:user:fac2c19b-dc5e-455a-b1b0-847a24c36b41
+  COLLISION (local)     : True
+  test contexts written : orig, collision, control, attrchanged
+
+--- requests (client-side eval route on the in-scope app host) ---
+orig (with h)                401         0B  
+collision (with h)           401         0B  
+control (with h)             401         0B  
+attrchanged (with h)         401         0B  
+orig (NO h)                  401         0B  
+collision (NO h)             401         0B  
+collision (bad h)            401         0B  
+collision (h+reasons)        401         0B  
+
+--- interpretation ---
+  orig with h        = 401
+  orig WITHOUT h     = 401   (4xx => secure mode is enforced for this env)
+  control with h     = 401   (4xx => the hash is not accepted for an unrelated context)
+  collision with h   = 401
+  ==> NOT VULNERABLE server-side: the service distinguished the two context shapes
+      even though the SDKs compute identical canonicalKeys for them.
+done -> ci-results/run-7/securemode-collision.txt

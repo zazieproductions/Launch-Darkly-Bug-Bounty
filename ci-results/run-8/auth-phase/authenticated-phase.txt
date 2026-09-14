@@ -1,0 +1,3 @@
+SKIPPED: LD_TOKEN secret not set — authenticated phase is inert.
+  To activate: add LD_TOKEN (API access token for our own account) as a repo secret.
+  See plans/account-setup-runbook.md for which secrets do what.

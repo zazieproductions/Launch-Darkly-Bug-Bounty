@@ -1,0 +1,412 @@
+*** GET /internal/ -> 200  {"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:44:58 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210040-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170299.549466,VS0,VE137
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"_links":{"account":{"href":"/internal/account","type":"application/json"},"actions":{"href":"/internal/actions","type":"application/json"},"self":{"href":"/internal/","type":"application/json"}}}
+*** GET /internal/config/anonymous -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"f0d9e400-e44e-47ee-8b0b-cbc4517d740b","anonymous":true},"user":{"key":"f0d9e400-e44e-47ee-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:44:59 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210108-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170299.978740,VS0,VE48
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"f0d9e400-e44e-47ee-8b0b-cbc4517d740b","anonymous":true},"user":{"key":"f0d9e400-e44e-47ee-8b0b-cbc4517d740b","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"679d009085030026740dc238e67a505337eb6fac48991461b3a7b2a518b8c13c","allClientSideFlags":{"$valid":true,"normalize-flag-evaluation-variation-order":false,"disable-origin-check-for-get-requests":true,"fdcore-bgsync-refire-grace":false,"analyzing-holdout-ld-holdout":false,"enable-exposure-attributes-empty-state":false,"use-flattened-context-keys-and-values":true,"enable-bypass-required-approval":true,"docs-demo-flag-boolean":false,"sdk-setup-flow-updates-apr-2026":false,"enable-fullstory-links-in-data-dog":true,"views-batch-operation-resource-linking":false,"adjust-cuped-results-for-stats-calculations":false,"enable-metric-aggregation-column-audit-entries":true,"agentic-onboarding-prompt-updates":false,"show-variables-column-in-bulk-eval-results":false,"enable-release-guardian-notifications":true,"enable-shortcuts-for-new-routes":{"ai-configs":true,"event-explorer":true,"experiments":true,"guarded-rollouts":true,"holdouts":true,"metrics":true,"monitor-dashboards":true,"multi-arm-bandits":true},"observability-team-test-data-runner-configuration":{"project-id":["10111570","10120040"],"runner-frequency":"1","session-secure-id":"nt47kP7ayHbRc7OvC6uabspcl4vt"},"fdcore-prefetch-before-apply":false,"vega-terms-acceptance-mode":"order-form-required","billing-refactor-plan-registry-wiring-accessors":false,"cooloff-retrial-extension-duration-days":14,"approvals-notification-list-max-limit":100,"align-frontend-custom-role-gating":false,"pa-enable-create-new-dashboard-in-create-chart":false,"vega-default-drift-nudge":false,"enable-automated-rollout-config-author-start-notifications":false,"enable-archive-checks-list-page-optimization":true,"new-hires-add-mrayzatrelles":false,"aic-model-config-sync-write-enabled":false,"redirect-proj-to-env-approval-settings":false,"enable-intercom-chat-ai":true,"use-dataviz-for-experiment-exposures":true,"gdpr-compliance-checkboxes":true,"account-limits-ai-runs":-2,"enable-relaxed-billing-ui-access":true,"simplified-toggle-ux-feature-preview":false,"enable-observability-debug-logs":false,"enable-optimistic-flag-creation":false,"enable-context-kinds-client-side-search":true,"command-bar-releases-environment":"Production","critical-audit-log-entries":[],"enable-member-settings-custom-role-display":true,"accelerate-hit-gonfalon-direct":false,"enable-snowflake-wne-separate-login-name":true,"observability-otel-load-shed-enabled":true,"enable-aws-marketplace-signup":true,"qualitative-feedback-version":"v3","enable-experiment-comments":true,"experiment-allocation-force-over":"off","qualitative-feedback-github-app-links":false,"transition-test-flag":false,"frontend-datadog-flag-rum-tracking":true,"enable-suggest-invites-batch-send":true,"enable-metric-guarded-rollout-connections":true,"simplify-create-flag":true,"enable-experiment-allocation":true,"new-integrations-card-and-list":true,"enable-tool-list-used-in-sort":false,"enable-metric-guarded-rollout-flag-purpose":true,"enable-plan-usage-banner-stale-time":0,"regression-marker-time":true,"enable-time-sdk-bound-get-sdk-active":false,"preserve-unrecognized-model-params":false,"composer-migration-state":"legacy","enable-ai-configs-name-generation":false,"enable-observability-pa-events":true,"enable-observability-datadog-profiling":false,"enable-members-find-by-id-fast-path":true,"enable-sort-by-targeting-modified-date":true,"web-app-data-dog-rum-application-sample-rate":100,"validate-flag-size-on-create-and-update":false,"enable-event-warehouse-api-schema":true,"enable-entities-key-for-pa-trends":true,"enable-reviewer-search-parity":false,"enable-p
+*** GET /internal/plans -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:00 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210148-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170300.854624,VS0,VE266
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_flag_override__showAll_true_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"3ea42484-f8f6-4fa6-9c6f-ef515dc264a3","anonymous":true},"user":{"key":"3ea42484-f8f6-4fa6-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:16 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210021-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170316.244785,VS0,VE47
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"3ea42484-f8f6-4fa6-9c6f-ef515dc264a3","anonymous":true},"user":{"key":"3ea42484-f8f6-4fa6-9c6f-ef515dc264a3","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"6ce2ff4f230f501f62bb36f1fe45ad96de4502a1f067ca846ff61e44a16676a3","allClientSideFlags":{"$valid":true,"ratio-metric-denominator-env-key":true,"new-hires-add-fsareshwala":false,"enable-vadim-test-mode":false,"enable-non-admin-token-scope-hints":true,"docs-homepage":false,"wne-custom-reload-cadence":false,"new-hires-add-vlee":false,"frequentist-percentiles-cutoff-date":1784505600000,"enable-frontend-dataset-audit-logs":false,"serve-chex-sliced-aggregates":true,"ai-evaluator-sqs-loggable-fields":["account_id","project_id","project_key","dataset_id","evaluation_id","run_id"],"rg-statistical-confidence-threshold":99,"fdcore-s3-hydration-sampling-denominator":0,"send-front-end-track-events-to-catfood":true,"enable-command-bar":true,"enable-day-one-trial-success":true,"enable-audit-log":true,"factory-default-agent-key":"bsimantel-factory","enable-ui-ai-summary-monitoring-feedback":false,"enable-github-app-settings-api":false,"show-view-membership-in-add-resources-modal":false,"enable-eval-moonshot":false,"enable-reverse-metric-group-counting":true,"enable-unauthenticated-targeting":false,"payload-view-shadow-notifier-strategy":"table","enable-orb-asymmetric-new-product-start-date":true,"update-guarded-rollout-review-and-save":true,"suppress-workflow-pending-rule-conflicts":true,"enable-flag-code-references":true,"testing-jira-forge-2":false,"use-immutable-shim":true,"enable-role-attributes-in-tags":false,"release-guardian-usage-limits":{"usageGatedTrial":{"softLimit":0,"hardLimit":0},"isPaidEntitlement":true},"enable-use-themed-svg-hook-api":false,"stale-flag-configs":false,"enable-usage-projection-ui":false,"enable-flag-import-integration":true,"enable-client-side-configuration-by-default":false,"enable-percentage-rollout-basis-point-step":false,"get-flags-maximum-count":50,"flag-targeting-progressive-uses-automated-releases":true,"ew-app-processor.publish-context-kinds-to-gonfalon":false,"experiment-hunter":false,"enable-approvals-fetch-service-tokens-by-id":true,"is-whn-supported":true,"enable-automated-audience-phase-releases":true,"enable-observability-session-export":false,"enabled-metric-analysis-config-fields":["unitAggregationType","eventDefault","analysisType"],"enable-ai-config-output-format":false,"show-flag-version-in-sidebar":false,"goaltender-http-fallback-max-body-bytes":-1,"client-mau-usage-cutover-date":1581811200000,"enable-json-pointer-attribute-name-normalization":true,"cached-query-endpoints":[],"enable-smoother-pa-charts-tooltip":false,"enable-self-serve-ubb-commit-overage-plans":true,"ai-configs-omit-judge-assistant-and-user-messages":false,"filter-tab-enter-arrows-from-autocomplete-experimental":true,"enable-ai-config-rule-reuse":false,"warehouse-task-runner-disable-integration":false,"composer-backed-scheduled-changes":false,"qualitative-feedback-vega-integration":false,"enable-release-policy-approval-banner":true,"metric-event-activity":true,"enable-experiment-notifications":true,"disable-flag-status-clickhouse-reads":false,"enable-ai-configs-maintainer":true,"ai-variation-generation":false,"enable-login-v2-oauth":false,"migrate-code-editor-5":true,"quickstart-event-connection-clickhouse":false,"enable-specific-overage-alerts":["MonthlyActiveUsers","EventsReceived","EventsPublished"],"enable-agent-optimization-audit-logs":false,"quick-submit-from-text-areas":true,"enable-updated-flag-targeting-quickstart":true,"enable-experiments-graphs-with-amberflo":false,"allow-decoupling-unit-of-analysis-for-rg":false,"nr-ld-harness-json":{"tier":"gold","limits":{"rps":100},"regions":["us-east-1","eu
+*** GET /internal/plans [ld_flag_override__showAll_true_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:16 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210076-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170317.640473,VS0,VE123
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_gonfalon_overrides_____] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"6b2c303e-e15f-4d32-8d3f-40d4d944fe99","anonymous":true},"user":{"key":"6b2c303e-e15f-4d32-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:17 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210020-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170317.453526,VS0,VE147
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"6b2c303e-e15f-4d32-8d3f-40d4d944fe99","anonymous":true},"user":{"key":"6b2c303e-e15f-4d32-8d3f-40d4d944fe99","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"e0687a251657e763d9283df13a7b8f8f819c1c01e4a679a605543dd2d1d9ad2c","allClientSideFlags":{"$valid":true,"enable-ai-config-clone":false,"enable-experimentation-keys-limit":true,"show-api-version-deprecation-warning":false,"enable-link-to-accelerate":false,"slotted-flag-search":false,"debugger-send-v4-events":false,"enable-sequential-automated-rollout-configs":false,"enable-private-marketplace-login-exclusion":false,"enable-count-experiments-attached-to-metrics-with-env-ids":false,"enable-marketplace-member-auto-provision":false,"enable-ai-config-bedrock-import":false,"enable-trace-based-metrics-for-rg":true,"flag-schema-dialect":"draft-07,2020-12","enable-o-auth-dcr":true,"audience-attributes":false,"enable-fuzzy-search-in-contexts-search":true,"audit-log-account-history-limit":-1,"enable-databricks-credential-validation":true,"enable-ai-config-variation-in-use-validation":true,"enable-ungated-sandbox":true,"enable-pa-disabled-entity-category":false,"enable-snippet-chip-drag-drop":false,"winsorization-frontend-config":{"bigquery-experimentation":true,"databricks-experimentation":true,"redshift-experimentation":true,"snowflake-experimentation":true},"snippets-bulk-update-skip-pending-approval":true,"infinite-flag-picker":true,"disable-withprojectcontext":false,"factory-test-echo-endpoint":false,"self-service-enterprise-trial-duration":14,"factory-e2e-group-260724":false,"enable-observability-alerts-table-layout":true,"flattened-settings":false,"show-api-and-playground-evals":false,"enable-temp-experimentation-keys-usage-alert":false,"enable-fm-context-counts-chart":true,"launchpad-button-experiment":"off","enable-guarded-rollout-zod-form":true,"segments-of-interest-moonshot":false,"observability-session-fields-cache":true,"enable-cleanup-prerequisites-block-code-removal":true,"enable-metric-values-operation-toggle":true,"ai-configs-s3-adapter-migration":false,"reset-password-form-refresh":true,"attributes-anytime-minimum-iteration-start-date":1759258800000,"flag-list-display-preferences":true,"enable-signup-referer-cookie":true,"metric-data-source-value-column-optional":true,"release-builder-target-all-rule":true,"allow-edit-pipeline-reviewers-during-release":false,"warehouse-hosted-metric-support-percentiles":true,"fdcore-eager-apply-heal":false,"context-key-cell-details-popover":true,"enable-experimentation-for-ai-configs":false,"enable-feature-events-data-export-check":false,"enable-access-token-expiry-notifications":true,"billing-refactor-plan-registry-account-endpoint":false,"enable-hockeystack-script":true,"enable-app-restart-banner":false,"role-attributes-ui":true,"experimentation-alert-banner":{"title":"Frequentist is the new default","dismissDurationDays":30,"dismissalKey":"frequentist-default","enabled":false,"isDismissable":true,"message":"New experiments default to the frequentist statistical approach. You can switch to Bayesian during setup.","pageOverrides":{"experiments-dashboard":{"enabled":true}},"status":"info"},"collect-frontend-metrics":true,"guarded-rollouts-ootb-shortcut":false,"expandable-errors-list-visible":true,"enable-icons-on-pa-charts-builder":false,"enable-account-domains-lookup":false,"fdcore-migration-clone-with-releasable-memory":true,"flag-sample-worker-sqs-send-concurrency":8,"ai-configs-enable-postgres-repository":false,"enable-flag-link-popover":true,"enable-sdk-key-mutation-env-version-bump":true,"feature-monitoring-context-counts-query-rewrite":true,"new-hires-add-mdecarlo":false,"enable-vega-draft-while-analyzing":true,"fix-release-delete-not-found-response":false,"enable
+*** GET /internal/plans [ld_gonfalon_overrides_____] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:18 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210083-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170318.010677,VS0,VE235
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_bypass_ua_tracking__true_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"3171e386-3edc-43dd-a2cb-28149ead3a6c","anonymous":true},"user":{"key":"3171e386-3edc-43dd-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:18 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210108-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170319.849531,VS0,VE61
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"3171e386-3edc-43dd-a2cb-28149ead3a6c","anonymous":true},"user":{"key":"3171e386-3edc-43dd-a2cb-28149ead3a6c","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"4fdad691e3d6bdb73c2ba4a81f3c791065637be05ac0a47c5801c2d098698660","allClientSideFlags":{"$valid":true,"ac-bulk-update-access-check":true,"unified-context-kind-display":true,"enable-aic-variations-revamp":true,"enable-courier-inbox":false,"enable-access-tokens":true,"oracle-of-gression-kill-switch":false,"enable-deployment-link":false,"enable-percentile-metrics-aggregates-wne":true,"fdcore.fastpath.redis-subscribe-enabled":true,"generate-rule-ai":false,"team-maintainer-requirement-ui-treatments":"footer-tag","enable-metric-guarded-rollout-flag-purpose":true,"enable-new-serve-dropdown-v2":false,"enable-ai-config-prompt-snippet-nesting":false,"enable-cuped-wne-other-warehouses":true,"contact-us-seat-limit":-1,"flag-list-compact-rows":false,"enable-sdk-key-clarification":true,"fdcore-eager-apply-heal":false,"clean-up-role-attributes-and-views":false,"enable-provisioning-teams-via-idp":false,"metric-filters-on-pa":false,"enable-observability-alerts-theme-fix":false,"new-hires-add-bsimantel":false,"observability-metric-alerts-granular-tables":true,"enable-open-seats-notifications":false,"enable-new-create-experiment-flow-ga-features":true,"enable-segment-list-filters-query-builder":false,"sne-use-warehouse-integrations-service-queue":true,"enable-public-api-site-links":false,"enable-new-pa-editable-text":false,"disable-code-references":false,"enable-smoother-pa-charts-tooltip":false,"enable-aic-agent-skills":false,"views-feedback-channel-id":"","basy-test-multi-20260820-171027":"treatment","configurable-destinations":[],"new-hires-add-katrinasarkar":false,"blackjack-enable-judge":false,"create-flags-form-button-variation":false,"enable-no-access-role":false,"create-metric-button-color":"primary","frontend-query-cache-gc-time":86400000,"enable-flag-naming-conventions":true,"enable-change-history-role-filtering":false,"frontend-experimentation-feedback-channel-id":"C0A6Q8J5ABD","enable-api-no-cache-headers":false,"incentive-feedback-variant":{},"use-case-3-targeting-post-galaxy":true,"enable-ai-evaluator-dataset-audit-logs":false,"enable-native-big-segment-import":false,"enable-application-flag-existence-check":true,"enable-full-page-ui-for-databricks-data-export":true,"enable-configurable-experimentation-for-pro-plans":false,"context-kind-validation":{"maxNameLength":256,"maxPerProject":150,"maxDescriptionLength":1000,"maxKeyLength":256},"enable-domain-matching":true,"enable-apps-and-versions":true,"custom-roles-as-saml-default-role":true,"monday-latency-test":"Control","experiment-scheduler-per-metric-iterations":["acb69b64-a3e6-496e-b7d0-e7fd2cf6030a"],"enable-ai-configs-archival":true,"enable-evals-from-code":false,"new-hires-add-aacharya":false,"enable-onboarding-access-cookie":false,"new-hires-add-zhalbert":false,"proj-ratio-metrics-last-seen-max":true,"enable-contact-us-backend-submit":true,"enable-cancel-subscription":true,"enable-accrued-invoices":false,"enable-experiment-flag-picker-improvements":true,"enable-primary-contexts-in-ui-override":false,"new-hires-add-phan":false,"enable-video-in-app":true,"always-access-check-teams":true,"test-psecor-android":false,"ai-tools-bulk-version-update":true,"metric-data-source-value-column-optional":true,"observability-error-group-rollup-tables":true,"enable-sdk-prompt":true,"ai-evaluator-enable-split-clickhouse-tables":false,"enable-signed-saml-authentication-requests":true,"mutable-iteration-metric-version-fix":true,"enable-experiment-rule-save-fix":false,"agentic-onboarding-snippet-text":"Run `npx skills add launchdarkly/agent-skills --skill onboarding -y` and onb
+*** GET /internal/plans [ld_bypass_ua_tracking__true_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:19 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210057-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170319.236097,VS0,VE231
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_data_source__test_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"1dfef5b5-ce0f-44a6-aa93-1ebd1939967e","anonymous":true},"user":{"key":"1dfef5b5-ce0f-44a6-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:20 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210119-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170320.174734,VS0,VE146
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"1dfef5b5-ce0f-44a6-aa93-1ebd1939967e","anonymous":true},"user":{"key":"1dfef5b5-ce0f-44a6-aa93-1ebd1939967e","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"c5cc06adf14387b05b04873c0ffac3d7005a0629096dad0f1aa3f0ef47832371","allClientSideFlags":{"$valid":true,"enable-exp-exposures-list":true,"display-cuped-v-1-deprecation-warning-banner":false,"enable-o11y-metrics-multi-level-filtering":true,"enable-self-serve-2025-plan-checkout":false,"enable-get-context-kind-endpoint":true,"enable-unix-timestamps-on-pa-charts":false,"redirect-proj-to-env-approval-settings":false,"domain-match-accounts-max-limit":0,"enable-workflow-builder-upsell":true,"enable-agent-graph-search":true,"enable-observability-logs-advanced-search":true,"enable-flag-tag-suggestions":false,"expandable-errors-list-visible":true,"restore-env-selector-canceled-navigation":true,"llm_parameter_normalization_enabled":false,"enable-install-ai-sdk-nav":false,"view-auditlog-querying-support":false,"observability-errors-settings-select-sizing-2":false,"allow-expanding-linked-resources":false,"experiment-results-slicing-backend":true,"wne-enable-dialect-abstraction":"ENABLED","enable-create-apps-and-versions":false,"enable-improvement-on-integrations-configuration":true,"multi-environment-monitoring":"inline","enable-email-verification-code":true,"enable-ai-config-metrics-context-filter":false,"evals-token-limits-max-per-member":10000000,"enable-vega-ai-limit":true,"enable-scim-for-azure":false,"enable-google-oauth-sign-up":true,"ip-allowlist-allows-ipv6":false,"enable-assigned-access-redesign":true,"cache-duration":0,"observability-vega-quota-enforcement":true,"composer-reads-to-shepherd":false,"prerelease-api-version-override":20240415,"enable-observability-o11y-metrics-ui":true,"new-navigation-home":false,"event-recorder-simulate-auth-failure-probability":0,"enable-ai-runs-checkout-display":false,"o11y-otel-clickhouse-trace-min-insert-block-size-bytes":268402944,"enable-flag-naming-conventions":true,"enable-accrued-invoices":false,"require-private-request-for-example-flags":false,"enable-metric-selector-autogenerated-categories":true,"fdcore-cache-control-header":"max-age=0","enable-member-project-context-persistence":true,"fdcore-bgsync-refire-grace":false,"enable-agent-ui":true,"enable-ai-configs-version-aware-cost":true,"custom-roles-as-saml-default-role":true,"experiment-hypothesis-assist-settings":{"showApiSwitch":false,"showDiagnostics":false,"api":"fast"},"get-flags-maximum-count":50,"enable-ai-config-tools":true,"get-new-experiments-on-flag":true,"metric-filters-on-pa":false,"guardian-alert-banner":{"enabled":false},"enable-native-big-segment-import":false,"enable-require-comments":true,"enable-observability-metrics-advanced-search":true,"enable-otel-import-logging":false,"agent-control-signup-straight-to-configs":false,"annas-kwl-flag":false,"enable-public-api-site-links":false,"create-metric-form-button-variation":false,"audience-selection-for-experimentation-default":5,"enable-new-entity-overlay":false,"chex-out-of-order-lookback-minutes":5,"skip-deprecated-experiment-result-queries":true,"Enable-flag-prerequisites":true,"enable-async-execution-in-eval-flow":false,"enable-alternate-reviewer-field":"","flag-targeting-via-ai":false,"enable-release-coordinator-dashboard-feature-preview":false,"mini-eval-chart-flag-targeting-page":true,"resource-count-insight-groups":200,"incentive-feedback-variant":{},"enable-mw-rum":false,"enable-billing-openapi-migration-ui":true,"enable-team-member-avatar-upload":false,"enable-data-viz-components":false,"experiment-attribute-limit":20,"enable-databricks-foundation-model-catalog-update":true,"calculate-persisted-sliced-results":false,"context-targeting-rows-to-dis
+*** GET /internal/plans [ld_data_source__test_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:20 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210117-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170321.731984,VS0,VE226
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_observability__true_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"f1bc1ecb-fce5-4ad8-a5c6-9548dd011a36","anonymous":true},"user":{"key":"f1bc1ecb-fce5-4ad8-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:21 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210148-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170322.654922,VS0,VE48
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"f1bc1ecb-fce5-4ad8-a5c6-9548dd011a36","anonymous":true},"user":{"key":"f1bc1ecb-fce5-4ad8-a5c6-9548dd011a36","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"164f96dfd3d419df38ad9d75a15312c70c7688deaf3b59e26d2c877a1d7d03ea","allClientSideFlags":{"$valid":true,"experiment-hunter":false,"enable-chart-data-api-analysis":false,"remember-maintainer-selection-at-flag-creation":true,"ai-evaluator-dataset-max-file-size-bytes":1073741824,"offline-eval-admin-token-limits":false,"plan-usage-tabs-override":{"observabilitySessionsTab":[],"vegaAITab":["diagnosticEnabled"],"serviceConnectionsTab":[],"dataExportTab":[],"experimentationKeysTab":[],"aiExecutionsTab":["diagnosticEnabled"],"observabilityLogsTab":[],"clientSideMAUTab":[],"experimentationMAUTab":[],"observabilityMetricsTab":["planDisabled","diagnosticDisabled"],"observabilityTracesTab":[],"experimentationEventsTab":[],"observabilityErrorsTab":[]},"enable-custom-approvals-with-custom-workflow":false,"enable-experiment-approval-opt-in":false,"skip-to-content":false,"enable-enterprise-opt-in-to-agent-control":true,"enable-bulk-user-management":true,"observability-vega-custom-agent-config":false,"gdpr-compliance-checkboxes":true,"send-full-event-properties-to-catfood":false,"detect-sdk-active":true,"enable-experiment-metrics-drag-reorder":false,"test-holdout-harsh-ld-holdout":false,"enable-new-pa-editable-text":false,"playground-input-token-cost-threshold":-1,"read-global-models-from-crdb":false,"experiment-results-worker-retry-limit":0,"show-expanded-evaluation-run-criteria-status-badges":["run-summary-page"],"enable-observability-date-range-picker-v2":true,"redis-reviewer-permissions-ttl":0,"new-hires-add-cstuart":false,"snowflake-native-experimentation-main-control":false,"enable-logout-url-for-saml-configs":false,"update-guarded-rollout-review-and-save":true,"applications-version-supported-error-response":false,"enable-ai-config-approval-checks":false,"enable-auto-seat-provisioning":true,"enable-create-apps-and-versions":false,"enable-observability-metric-exemplars":true,"enable-access-check-filter-on-get-members":false,"disable-cmau-chart-and-display-message":"","aic-optimized-version-query":true,"enable-payload-filtering-v2":false,"enable-observability-trace-query-v2":true,"enable-ip-allowlist-search-pagination":true,"enable-observability-alert-ingest-delay-indicator":true,"enable-csv-injection-prevention":false,"views-normalize-key-on-create":false,"enable-observability-ai-suggested-prompts":true,"orb-client-max-retries":2,"hide-o11y-usage-bar":false,"native-big-segment-import-max-file-size":40,"agentic-onboarding-prompt-updates":false,"nats-max-message-size":8000000,"observability-metrics-ff-join-dedup":true,"deprecated-flag-filters":{"codeReferences":false,"contextKindTargeted":false,"contextKindsEvaluated":false,"followerId":false,"hasDataExport":false,"hasExperiment":false,"status":true,"targeting":false},"enable-developer-plan-checkout":false,"minimize-edit-button-targeting":false,"enable-release-guardian-notifications":true,"experiment-holdouts-allow-archive":false,"enable-semantic-search-rerank":false,"fdcore-client-backend-version-override":"v1","show-settings-access-section":true,"enable-o11y-metrics-multi-level-filtering":true,"enable-segment-description-inline-edit":true,"enable-pa-disabled-entity-category":false,"migration-metrics-chart-api-mode":"enabled","enable-observability-traces-filter-exclusive-select":true,"environment-critical-filter":false,"ai-topdogs-feedback-channel-id":"C07TS764GAK","streamer-drain-strategy":"shuffled","agent-graph-max-handoff-size-kb":4,"should-relax-de-redshift-url-validation":true,"frontend-query-cache-persistence":"indexeddb","enable-approval-settings":true,"enable-aud
+*** GET /internal/plans [ld_observability__true_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:22 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210089-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170322.121550,VS0,VE110
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [x_ld_project_id__thisprojectshouldnotexist_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"4208f558-8423-4746-bc2f-9f71d918971c","anonymous":true},"user":{"key":"4208f558-8423-4746-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:23 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210021-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170323.929584,VS0,VE81
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"4208f558-8423-4746-bc2f-9f71d918971c","anonymous":true},"user":{"key":"4208f558-8423-4746-bc2f-9f71d918971c","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"0686caecd952eecdab45d617b4559eb43935cf21034fea10891cd6c2b7a4a43f","allClientSideFlags":{"$valid":true,"new-hires-add-gsasaran":false,"fdcore-concurrency-cxn-init-per-acct":"60%","enforce-ai-config-variation-approvals":false,"enable-dataset-editor":true,"new-hires-add-fsareshwala":false,"rollout-worker-clickhouse-max-memory-usage-gib":96,"enable-ai-config-approval-checks":false,"ew-app-processor.publish-context-kinds-to-gonfalon":false,"fdcore.fastpath.redis-subscribe-enabled":true,"basy-test-bool-20260820-171025":false,"playground-list-view":false,"enable-mau-usage-projection":false,"unified-selected-metrics-table":true,"enable-sampling-signals-ui":false,"enable-maintainer-updates":true,"enable-prereqs-for-ai-configs":false,"enable-follow-flag-targeting-changes":true,"accounts-excluded-from-overage-emails":{"accounts":["5bfdc6a223d2f65d48b8fd10"]},"fdcore-parse-notify-body":true,"enable-observability-traces-single-scroll-waterfall":true,"enable-new-invite-members-permissions-logic":true,"enable-audience-test-run":false,"show-updated-sdk-keys-descriptions":true,"redirect-proj-to-env-approval-settings":false,"frontend-version-polling-interval-ms":14400000,"enable-bizible-script":true,"enable-observability-trace-scoped-span-tabs":false,"gonfalon-use-rbac-facade":false,"enable-role-attributes-in-tags":false,"variationRenderOptimization":false,"enable-observability-fairytale-mode":false,"allow-new-iterations-with-archived-flag":true,"enable-dry-run-patch-permission-check":false,"new-hires-add-ahogue":false,"enable-ai-monitoring-vega":false,"new-navigation":false,"welcome-survey-rotating-question-bank":{"uses-launchdarkly-already":{"inputType":"single-select","options":["Yes","No","Not sure"],"questionText":"Does your company already use LaunchDarkly?"},"session-goal":{"inputType":"free-text","questionText":"In your own words, what are you hoping to do in your session today?"},"ai-request-volume":{"options":["Not in production yet","Under 100","100 to 10K","Over 10K","Not sure"],"questionText":"Roughly how many AI requests does your app handle in a day?","showWhenFirstAction":["ai"],"inputType":"single-select"},"ai-app-stage":{"inputType":"single-select","options":["In production","Still building","I don't have an app"],"questionText":"Is your AI app already serving real users, or are you still building it?","showWhenFirstAction":["ai"]},"ai-api-key-access":{"options":["Yes","No","N/A"],"questionText":"Can you create or request LLM API keys at your org?","showWhenFirstAction":["ai"],"inputType":"single-select"},"trial-intent":{"options":["Set it up and get it working in my app","Put together a POC or demo for my team","Just looking around for now","Not sure yet"],"questionText":"What do you want to do during your trial?","inputType":"single-select"},"sdk-installer-v2":{"questionText":"When it's time to add the SDK, who does that?","inputType":"single-select","options":["Me, I'll make the code changes","Someone else, with or without me"]},"trial-goal":{"inputType":"free-text","questionText":"In your own words, what are you hoping to accomplish during your trial?"},"time-horizon":{"options":["Already working on it","This quarter","Next 6 months","No specific timeline","Not planning to install"],"questionText":"What's your time horizon for getting a feature flag tool live in production?","inputType":"single-select"},"ai-assistant-task":{"showWhenFirstAction":["ai"],"inputType":"single-select","options":["Write the SDK code in my repo","Generate the exact snippet for my stack","Explain what to do","Nothing"],"questio
+*** GET /internal/plans [x_ld_project_id__thisprojectshouldnotexist_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:23 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210138-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170323.403766,VS0,VE114
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [x_ld_envid__thisenvshouldnotexist_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"6bf43cec-45ec-4c61-9c19-a4ad6af0cef2","anonymous":true},"user":{"key":"6bf43cec-45ec-4c61-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:24 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210042-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170324.109405,VS0,VE47
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"6bf43cec-45ec-4c61-9c19-a4ad6af0cef2","anonymous":true},"user":{"key":"6bf43cec-45ec-4c61-9c19-a4ad6af0cef2","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"db6228ce833e32a96d53bb71ff1e1cbaf2091389a999f054b514f5ff1243d4ca","allClientSideFlags":{"$valid":true,"enable-metric-guarded-rollout-flag-purpose":true,"enable-percentage-rollout-in-segment-rules":true,"enable-access-token-expiry-notifications-setting":true,"enable-account-usage-for-non-admins":true,"observability-agentcore-instances":false,"fix-root-redirect-environment-params":false,"enable-unix-timestamps-on-pa-charts":false,"agentcontrol-llm-dashboard-banner-experiment":"fixInMinutes","enable-signed-saml-authentication-requests":true,"enable-session-replay-in-flag-audience":false,"aic-llm-provider-call-timeout-seconds":300,"enable-try-it-live-onboarding-guidance":false,"enable-ccm-graphs-using-amberflo":false,"create-metric-button-color":"primary","enable-ai-config-monitoring-multi-metric-charts":false,"enable-experiments-graphs-with-amberflo":false,"enable-service-now-segment-approvals":false,"enable-highly-evaluated-querier":false,"role-attributes-ui":true,"enable-currency-format-money":false,"ai-configs-opt-in-expiration":"","hide-sdk-keys-in-sandbox":false,"use-optimized-funnel-query-rows-threshold":0,"resource-count-environments":300,"override-days-to-minutes":false,"enable-launchlitely":false,"feedback-recipient-ai-configs":false,"event-explorer-auto-refetch-interval":60000,"enable-release-coordinator-webhook":true,"new-hires-add-msuzuki":false,"release-builder-auto-launch":false,"fdcore-publish-before-apply":false,"unified-selected-metrics-table":true,"use-experiment-traffic-for-exposure-count":true,"enable-new-access-token-expiry-field":true,"new-hires-add-example-user":false,"basy-test-multi-20260820-223011":"treatment","o11y-sessions-unavailable":false,"show-experiment-design-active-feedback-form":false,"fd-debug-purge-response-output":false,"enable-view-create-from-select":false,"track-web-vitals":["LCP"],"enable-percentage-rollout-basis-point-step":false,"new-hires-add-dlu":false,"resolved-prerequisites-endpoint-view-project-access-check":true,"add-mcc-adjusted-frequentist-popover":true,"enable-new-create-experiment-flow":true,"enable-ai-config-targeting-approvals":true,"vega-model-provider":"bedrock","new-patch-holdout-authz":false,"aic-datasets-adopt-four-column-schema":true,"notification-subscription-limit-per-flag":10,"enable-cmd-k-new-navigation":false,"new-hires-add-kong":false,"observability-session-report-user-identifier-field":"","enable-agent-optimization-audit-logs":false,"parallelize-fresh-session-context":true,"show-settings-access-section":true,"agent-graph-max-handoff-size-kb":4,"enable-org-settings-query-builder":false,"enable-join-org-sso-redirect":true,"accelerate-relative-path-prefix":"","test-backend-flag-release":false,"enable-version-id-in-use-metric-hook":false,"o11y-pa-events-track-name":"launchdarkly.track","enable-observability-ai-features":false,"enable-team-member-avatar-upload":false,"applications-version-supported-error-response":false,"project-settings-new-layout":true,"enable-ai-config-prompt-snippets":true,"custom-roles-as-saml-default-role":true,"alexis-testing":0,"migrate-context-kind-form":true,"enable-ai-playground-analytics-tracking":false,"billing-refactor-subscription-enriched-fields":false,"core-processor-send-contexts-to-context-recorder-kinesis":true,"is-hosted-pa-enabled":false,"rg-left-nav-master":true,"release-list-api-max-limit":100,"enable-filter-service-token-entries-in-change-history":false,"enable-observability-traces-rows-read-span-count":true,"enable-ai-guarded-rollout":true,"show-api-and-playground-evals":false,"enable-migration-metrics-c
+*** GET /internal/plans [x_ld_envid__thisenvshouldnotexist_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:24 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-dfw-kdfw8210076-DFW
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170325.504349,VS0,VE128
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [ld_account_id_verification_for_salesforce__test_] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"d0ee4b96-0e99-4823-b78c-6dcbade7bdd1","anonymous":true},"user":{"key":"d0ee4b96-0e99-4823-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:25 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640050-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170325.273516,VS0,VE100
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"d0ee4b96-0e99-4823-b78c-6dcbade7bdd1","anonymous":true},"user":{"key":"d0ee4b96-0e99-4823-b78c-6dcbade7bdd1","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"289bedc6ed52e84c608abeb97f858de76a83682034840e9d5bb7471f9ff8fc8b","allClientSideFlags":{"$valid":true,"enable-self-serve-2025-plan-checkout":false,"ai-evaluator-llm-max-retries":3,"flag-schema-dialect":"draft-07,2020-12","audience-phases-maximum-phase-limit":10,"enable-cmd-k-new-navigation":false,"enable-change-history-token-filter":false,"enable-aws-marketplace-signup":true,"enable-manual-destination-id-for-snowflake-de":true,"user-target-alert-threshold":50000,"pa-warehouse-with-data-export":["snowflake-v2"],"observability-skip-unused-session-field-load":false,"exp-pa-bridge-enabled":false,"enable-flag-tag-suggestions":false,"enable-lifecycle-ignore-evals-for-code-removal":true,"get-manifest-query-kind":"separate-queries","inspect-variations-from-flag-list":false,"amberflo-server-connection-minutes-meter-api-name":"ServerSDKConnectionMinutes","enable-sticky-project-navigation-mode":false,"manage-project-context-via-react":false,"test-holdout-ld-holdout":false,"pa-feature-matrix":{"charts":{"retention":{"visualization":{"cohortFromChart":"hidden"}},"trends":{"events":{"calculation":{"frequencyPerUser":["median","percentile"],"aggregateProperties":["median","percentile"]}}}},"cohorts":{"firstTimeFilter":"hidden","staticCohort":{"downloadCohort":"hidden","uploadCohort":"hidden"}},"userActivity":"hidden"},"store-view-selection-in-member-preferences":false,"show-settings-plans-and-usage-section":true,"ai-assisted-exp-hypothesis-guidance":false,"enable-scoped-workflow-members-fetch":true,"enable-video-in-app":true,"enable-full-page-ui-for-databricks-warehouse-native-integration":true,"emau-self-serve-pricing-facade":{"showOveragePrice":false,"freeQuantity":100000,"overagePriceInCents":0},"enable-try-it-live-onboarding-guidance":false,"enable-observability-track-events":false,"enable-agent-prompt-refactor":true,"allow-linking-metrics-to-views":false,"nr-ld-harness-string-empty":"nonempty","experiment-scheduler-per-metric-iterations":["acb69b64-a3e6-496e-b7d0-e7fd2cf6030a"],"enable-most-recent-flag-history":true,"tui-atlassian":true,"foundation-2023-plan-version":2,"enable-command-bar-eager-search":true,"enable-view-favoriting":false,"ew-app-processor.publish-application-flags-to-gonfalon":false,"enable-modernized-tokens-endpoint":true,"tui-cursor-color":"1","composer-river-workers-enabled":false,"customer-usage":{"enableEventsTab":false,"enableExperimentsTab":false,"enableCustomerUsage":false,"enableServerMAUChart":false,"enableServerConnectionsChart":false,"enableClientMAUChart":false,"enableClientConnectionsChart":false,"enableUsageTabs":false,"enableServerTab":false,"enableClientTab":false},"wne-enable-dialect-abstraction":"ENABLED","feedback-recipient-metric-data-sources":false,"observability-write-buffer-max-buffer-size-kb":100000,"winsorization-frontend-config":{"bigquery-experimentation":true,"databricks-experimentation":true,"redshift-experimentation":true,"snowflake-experimentation":true},"run-flag-checker":true,"feedback-ai-grouper-feedback-truncation-limit":500,"pa-enable-create-new-dashboard-in-create-chart":false,"enable-observability-logs-query-builder":false,"show-lifecycle-cleanup-preview-feature-preview":false,"throw-errors-in-router-hooks":true,"fdcore-cleaner-tracks-updates":true,"require-approvals-for-an-environment":false,"feedback-recipient-observability-insight-dashboards":false,"enable-guarded-rollout-vega-investigation":false,"enable-candu":false,"docs-homepage":false,"enable-require-change-confirmation":true,"enable-judges-in-use":false,"new-hires-add-vlee":false,"enable-command-bar":tr
+*** GET /internal/plans [ld_account_id_verification_for_salesforce__test_] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:25 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640029-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170326.744263,VS0,VE145
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** GET /internal/config/anonymous [baseline] -> 200  {"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"47a5248f-1264-42f1-bc0b-76cf10b91ca0","anonymous":true},"user":{"key":"47a5248f-1264-42f1-
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:26 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640092-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170327.515629,VS0,VE99
+    HDR vary: Accept-Encoding, Origin
+    HDR age: 0
+    BODY(first 4k):
+{"clientSideId":"5866f3891cd8810a42ce5281","dogfoodBaseUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodStreamUri":"https://relay-fdv2-prod.ld.catamorphic.com","dogfoodClientSideEventsUri":"https://events.ld.catamorphic.com","dogfoodSendEvents":true,"dogfoodContext":{"kind":"multi","session":{"key":"47a5248f-1264-42f1-bc0b-76cf10b91ca0","anonymous":true},"user":{"key":"47a5248f-1264-42f1-bc0b-76cf10b91ca0","name":"","dogfoodCanary":false,"anonymous":true}},"dogfoodEventsCapacity":1000,"secureModeContextHash":"471265c9e9b78ead6eae821b5bdb8c2b7b026291b35e96a2bbaa4b590273f1fb","allClientSideFlags":{"$valid":true,"rollout-worker-enable-query-settings":true,"enable-plan-usage-banner":true,"enable-metric-guarded-rollout-connections":true,"billing-refactor-plan-registry-wiring-accessors":false,"enable-observability-traces-query-builder":false,"decouple-release-viewer-from-flag-history":true,"enable-teams-as-flag-maintainers":true,"composer-max-template-definition-bytes":102400,"project-environments-page-size":20,"rg-statistical-confidence-threshold":99,"vega-skills-architecture":true,"ai-evaluator-llm-max-retries":3,"ai-configs-duplicate-tools-in-variation-fd-payload":true,"enable-agent-graph-monitoring":true,"enable-auto-seat-provisioning":true,"new-hires-add-kong":false,"enable-databricks-data-export-oauth-auth":true,"enable-ip-allowlist":false,"max-sdk-keys-per-environment":5,"flag-list-compact-rows":false,"enable-ai-config-metrics-context-filter":false,"metrics-banner-variations":"{\"headline\": \"Telemetry insights are currently unavailable. Initialize the plugin to unlock the full experience.\", \"description\": \"Get real-time visibility into errors, performance and web vitals that measure how fast and smooth your app feels to users.\", \"useAlert\": false}","block-modify-in-use-variations":false,"new-hires-add-aklatzke":false,"vox-voice-commands":false,"fd-debug-purge-response-output":false,"web-app-performance-metrics-thresholds":{"LCP":2500},"nr-ld-harness-bool-off":false,"annas-kwl-flag":false,"enable-amberflo-ui-hosts-meter-progress-bar":false,"enable-reverse-metric-group-counting":true,"observability-api":"https://pri.observability.app.launchdarkly.com/","fdcore-bgsync-use-remote-state":false,"iteration-started-at-cuped-chex-cutoff":1786381200000,"enable-aic-auto-opt-in-self-serve-signups":false,"enable-dataviz-component-in-pa":false,"enable-signup-playground":false,"enable-ai-configs-name-generation":false,"new-hire-page-visible":false,"enable-write-flag-config-version-sum":true,"new-hires-add-kjoseph":false,"experiments-default-disable-reshuffling":true,"github-vega-app-url-slug":"launchdarkly-vega","enable-follow-flag-targeting-changes":true,"contexts-list-api-use-materialized-json":false,"track-web-vitals":["LCP"],"enable-signup-referer-forwarding":true,"views-batch-operation-resource-linking":false,"enable-observability-ai-suggested-prompts":true,"enable-service-now-segment-approvals":false,"enable-auth-settings-ux-improvements":true,"data-export-disabled-destinations":null,"ai-configs-opt-in-expiration":"","enable-plan-picker-redesign":false,"display-adaptive-triggers":false,"enable-side-by-side-playground":false,"new-hires-add-siddharthasthana":false,"migration-metrics-chart-api-mode":"enabled","docs-statsig-metric-importer-cli":false,"enable-self-serve-ubb-commit-overage-plans":true,"oracle-of-gression-kill-switch":false,"create.environments":false,"enable-flag-scoping-correlation":false,"experiment-dashboard-page-size":50,"funnel-group-metric-limit":11,"enable-sdk-usage-all-versions-api":true,"enable-experiment-from-ai-config-targeting-rule":true,"disable-built-in-context-name-attributes":false,"release-guardian":false,"enable-create-apps-and-versions":false,"enable-application-view-auto-linking":false,"create-metric-button-color":"primary","enable-view-create-from-select":false,"feedback-recipient-ai-configs-playground":false,"enable-ai-configs-ui-filters":true,"product-refresh":false,"playground-input-token-cost-threshold":-1,"enable-cleanup-prerequisites-block-code-removal":true,"transition-tes
+*** GET /internal/plans [baseline] -> 200  {"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_link
+    HDR HTTP/2 200 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:27 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640022-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170327.004296,VS0,VE170
+    HDR vary: Accept-Encoding
+    HDR age: 0
+    BODY(first 4k):
+{"items":[{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29de8a25dc272000000d","type":"application/json"}},"name":"team","version":1,"monthlyPrice":29900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":25000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/558b29ee922f08271400000a","type":"application/json"}},"name":"startup","version":1,"monthlyPrice":7900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":false,"customRoles":false,"mauLimit":10000,"auditLog":true,"enforceSeatLimits":false}},{"_links":{"parent":{"href":"/internal/plans","type":"application/json"},"self":{"href":"/internal/plans/58a3a1358ff1540922d62480","type":"application/json"}},"name":"growth","version":2,"monthlyPrice":69900,"_limits":{"multipleProjects":false,"multipleEnvironments":false,"abTesting":false,"teams":true,"customRoles":false,"mauLimit":50000,"auditLog":true,"enforceSeatLimits":false}}],"_links":{"self":{"href":"/internal/plans","type":"application/json"}}}
+*** AUTH-VARIANT DIFFERS FROM BASELINE: /api/v2/projects [AUTH: Bearer bugcrowddummyvalue] -> 401 {"code":"invalid_token","message":"invalid access token"}
+    HDR HTTP/2 401 
+    HDR content-type: application/json
+    HDR cache-control: no-cache, max-age=0, must-revalidate, no-store
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR www-authenticate: Bearer error="invalid_token", error_description="invalid access token"
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:33 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640092-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170333.476004,VS0,VE108
+{"code":"invalid_token","message":"invalid access token"}
+*** AUTH-VARIANT DIFFERS FROM BASELINE: /api/v2/announcements [AUTH: Bearer bugcrowddummyvalue] -> 401 {"code":"invalid_token","message":"invalid access token"}
+    HDR HTTP/2 401 
+    HDR content-type: application/json
+    HDR referrer-policy: strict-origin-when-cross-origin
+    HDR strict-transport-security: max-age=31536000; includeSubDomains
+    HDR www-authenticate: Bearer error="invalid_token", error_description="invalid access token"
+    HDR x-content-type-options: nosniff
+    HDR x-xss-protection: 1
+    HDR accept-ranges: bytes
+    HDR date: Fri, 11 Sep 2026 23:45:35 GMT
+    HDR via: 1.1 varnish
+    HDR x-served-by: cache-chi-kmdw8640082-CHI
+    HDR x-cache: MISS
+    HDR x-cache-hits: 0
+    HDR x-timer: S1789170336.851167,VS0,VE95
+    HDR vary: Accept-Encoding, Origin
+{"code":"invalid_token","message":"invalid access token"}

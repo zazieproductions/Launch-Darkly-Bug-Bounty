@@ -1,0 +1,6 @@
+HTTP/2 401 
+content-type: application/json
+ld-region: us-east-1
+strict-transport-security: max-age=31536000; includeSubDomains
+date: Fri, 11 Sep 2026 23:07:06 GMT
+

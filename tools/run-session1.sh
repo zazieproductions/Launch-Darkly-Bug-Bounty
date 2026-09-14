@@ -33,24 +33,21 @@ curl -sS -i --max-time 15 "$LD/api/v2/announcements" > "$OUT/A1_announcements_un
 head -3 "$OUT/A1_announcements_unauth.txt"
 
 if [ "$INCLUDE_WRITE" -eq 1 ]; then
-  echo "-- A2 announcements POST (unauth) — WILL CREATE DATA; delete afterwards --"
-  curl -sS -i --max-time 15 -X POST "$LD/api/v2/announcements" \
-    -H 'Content-Type: application/json' \
-    -d '{"message":"bugcrowd test announcement - safe to delete"}' > "$OUT/A2_announcements_post_unauth.txt" || true
-  head -3 "$OUT/A2_announcements_post_unauth.txt"
-  ID=$(python3 - <<'EOF' 2>/dev/null
-import json,re
-t=open("'+ "$OUT/A2_announcements_post_unauth.txt" +'",errors="ignore").read()
-m=re.search(r'\{.*\}',t,re.S)
-print(json.loads(m.group(0)).get('_id') or json.loads(m.group(0)).get('id') or '')
-EOF
-)
-  if [ -n "${ID:-}" ]; then
-    echo "    created id=$ID — deleting:"
-    curl -sS -i --max-time 15 -X DELETE "$LD/api/v2/announcements/$ID" > "$OUT/A2_delete.txt" || true
-  fi
-else
-  echo "-- A2 skipped (pass --include-announcement-write to run the unauth POST test) --"
+  # A2 REMOVED ON PURPOSE (2026-09-11).
+  #
+  # Live probing showed unauth GET /api/v2/announcements answers
+  #   {"code":"unauthorized","message":"Invalid account ID header"}
+  # i.e. this route is gated by an undocumented account-ID header, not by the normal
+  # access-token path. Its write siblings (createAnnouncementPublic / updateAnnouncementPublic /
+  # deleteAnnouncementPublic) create announcements that are rendered as in-app banners with
+  # severity=info|warning|critical and start/end scheduling -- for EVERY customer, not just our
+  # own tenant. An unauthenticated POST here is therefore a potential service-wide content change:
+  # exactly the "compromises other users / destructive post-exploitation" case the program says to
+  # STOP on and report instead of exercising. See recon/live-probe-results.md O1.
+  #
+  # If unauth READ is ever confirmed, report it and describe the write risk as unexercised.
+  echo "-- A2 permanently disabled: unauth announcement writes could affect all customers --"
+  echo "   (program rule: stop and report rather than perform destructive/wide-blast-radius writes)"
 fi
 
 echo "-- A3 caller-identity (unauth) --"

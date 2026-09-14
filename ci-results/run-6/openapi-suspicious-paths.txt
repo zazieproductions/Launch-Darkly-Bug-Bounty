@@ -1,0 +1,3 @@
+/api/v2/announcements
+/api/v2/announcements/{announcementId}
+/api/v2/caller-identity
