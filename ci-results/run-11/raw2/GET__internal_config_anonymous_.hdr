@@ -1,0 +1,16 @@
+HTTP/2 200 
+content-type: application/json
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-xss-protection: 1
+accept-ranges: bytes
+date: Mon, 14 Sep 2026 00:54:24 GMT
+via: 1.1 varnish
+x-served-by: cache-sjc10040-SJC
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789347264.440766,VS0,VE294
+vary: Accept-Encoding, Origin
+age: 0
+

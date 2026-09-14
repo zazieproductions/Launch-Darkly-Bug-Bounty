@@ -1,0 +1,82 @@
+[
+ {
+  "op": "GET /api/v2/announcements",
+  "operationId": "getAnnouncementsPublic",
+  "security": [
+   {
+    "ApiKey": [
+     "read",
+     "write"
+    ]
+   }
+  ],
+  "parameters": [
+   {
+    "name": "status",
+    "in": "query",
+    "required": false
+   },
+   {
+    "name": "limit",
+    "in": "query",
+    "required": false
+   },
+   {
+    "name": "offset",
+    "in": "query",
+    "required": false
+   }
+  ]
+ },
+ {
+  "op": "POST /api/v2/announcements",
+  "operationId": "createAnnouncementPublic",
+  "security": [
+   {
+    "ApiKey": [
+     "read",
+     "write"
+    ]
+   }
+  ],
+  "parameters": []
+ },
+ {
+  "op": "DELETE /api/v2/announcements/{announcementId}",
+  "operationId": "deleteAnnouncementPublic",
+  "security": [
+   {
+    "ApiKey": [
+     "read",
+     "write"
+    ]
+   }
+  ],
+  "parameters": [
+   {
+    "name": "announcementId",
+    "in": "path",
+    "required": true
+   }
+  ]
+ },
+ {
+  "op": "PATCH /api/v2/announcements/{announcementId}",
+  "operationId": "updateAnnouncementPublic",
+  "security": [
+   {
+    "ApiKey": [
+     "read",
+     "write"
+    ]
+   }
+  ],
+  "parameters": [
+   {
+    "name": "announcementId",
+    "in": "path",
+    "required": true
+   }
+  ]
+ }
+]

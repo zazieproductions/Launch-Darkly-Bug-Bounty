@@ -1,0 +1,18 @@
+HTTP/2 401 
+content-type: application/json
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+www-authenticate: Bearer error="invalid_token", error_description="invalid access token"
+x-content-type-options: nosniff
+x-xss-protection: 1
+accept-ranges: bytes
+date: Mon, 14 Sep 2026 00:55:07 GMT
+via: 1.1 varnish
+x-served-by: cache-sjc10054-SJC
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789347308.795867,VS0,VE77
+vary: Accept-Encoding, Origin
+age: 0
+content-length: 57
+
