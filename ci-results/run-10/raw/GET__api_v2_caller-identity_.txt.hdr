@@ -1,0 +1,20 @@
+HTTP/2 401 
+content-type: application/json
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-ratelimit-reset: 1789344480000
+x-ratelimit-route-limit: 1000
+x-ratelimit-route-remaining: 999
+x-xss-protection: 1
+accept-ranges: bytes
+date: Mon, 14 Sep 2026 00:07:50 GMT
+via: 1.1 varnish
+x-served-by: cache-bfi-krnt7300074-BFI
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789344470.277832,VS0,VE66
+vary: Accept-Encoding, Origin
+age: 0
+content-length: 56
+

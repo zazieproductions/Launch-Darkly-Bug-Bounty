@@ -1,0 +1,16 @@
+HTTP/2 400 
+content-type: application/json
+access-control-allow-origin: *
+access-control-max-age: 3600
+access-control-allow-methods: OPTIONS, GET
+access-control-allow-headers: Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-Requested-With, X-LD-Private, X-LD-AccountId, X-LD-EnvId, X-LD-PrjId, X-LaunchDarkly-Event-Schema, X-LaunchDarkly-User-Agent, X-LaunchDarkly-Wrapper, LD-API-Version, X-LaunchDarkly-Tags
+accept-ranges: bytes
+date: Mon, 14 Sep 2026 00:07:40 GMT
+via: 1.1 varnish
+x-served-by: cache-bfi-krnt7300114-BFI, cache-bfi-krnt7300089-BFI
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789344460.321415,VS0,VE12
+age: 0
+content-length: 98
+

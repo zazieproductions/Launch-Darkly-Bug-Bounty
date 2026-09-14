@@ -1,0 +1,45 @@
+# canonicalKey / fully_qualified_key collision — python-server-sdk (real SDK class)
+source: sdk/python-server-sdk/ldclient/context.py
+
+A = single-kind user context   key='org:o1:user:u1'
+B = multi-context              {"org": "o1", "user": "u1"}
+   A.fully_qualified_key = 'org:o1:user:u1'
+   B.fully_qualified_key = 'org:o1:user:u1'
+   COLLISION = True   identical secure-mode HMAC = True
+   hmac = 5c78996b75c6cf4d743499ca21c06cbd6db9b39828fb4ccf20a263d6812c03b9
+
+A = single-kind user context   key='session:1234:user:5678'
+B = multi-context              {"session": "1234", "user": "5678"}
+   A.fully_qualified_key = 'session:1234:user:5678'
+   B.fully_qualified_key = 'session:1234:user:5678'
+   COLLISION = True   identical secure-mode HMAC = True
+   hmac = 907fbd11e51f50d4ccc8e64e5fa7fa38c7e1716fbc6242fb0a9d75a0487709ca
+
+A = single-kind user context   key='device:abc:user:xyz'
+B = multi-context              {"device": "abc", "user": "xyz"}
+   A.fully_qualified_key = 'device:abc:user:xyz'
+   B.fully_qualified_key = 'device:abc:user:xyz'
+   COLLISION = True   identical secure-mode HMAC = True
+   hmac = 6c55d1c9abb9535d6daff9ea93ddef2f7fac225c2ce00f8b8db06b718c5f5166
+
+A = single-kind user context   key='org:o1:team:t1:user:u1'
+B = multi-context              {"org": "o1", "team": "t1", "user": "u1"}
+   A.fully_qualified_key = 'org:o1:team:t1:user:u1'
+   B.fully_qualified_key = 'org:o1:team:t1:user:u1'
+   COLLISION = True   identical secure-mode HMAC = True
+   hmac = ba57ea45c956b257cbc5652b7030353f7de569c67c34d3e9074b1b373fafdc64
+
+collisions: 4/4
+
+secondary vector — kind 'a:b:c': error = 'context kind contains disallowed characters'
+  (kind names are validated, so the exploitable asymmetry is the un-escaped *key* of a
+   'user'-kind context; keys are free-form strings and are not validated for colons)
+
+the escaping rule as implemented (context.py):
+  _escape_key_for_fully_qualified_key: key.replace('%', '%25').replace(':', '%3A')
+  single kind: full_key = key if kind == DEFAULT_KIND else '%s:%s' % (kind, escape(key))
+  multi kind : ':'.join(kind + ':' + escape(key) for each kind, sorted by kind)
+  -> escape() is skipped exactly when kind == 'user', while multi-context keys ARE escaped.
+     Any user key of the form "<kind1>:<key1>:<kind2>:<key2>" therefore impersonates a
+     multi-context (and vice versa) for every consumer of fully_qualified_key: secure-mode
+     HMAC, event/context deduplication and cache keys.

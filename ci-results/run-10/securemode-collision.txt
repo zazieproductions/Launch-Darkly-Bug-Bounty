@@ -1,0 +1,23 @@
+=== F-002 live check: canonicalKey collision vs secure-mode hash ===
+  clientSideId          : 5866f3891cd8810a42ce5281
+  secureModeContextHash : 890b37291d31becaa89604711b46d1f7625d7fc86f665317ff521ec757b0c1bd
+  signed dogfoodContext : {"kind":"multi","session":{"key":"4c18630e-e5af-405b-a447-bed6d39dd049","anonymous":true},"user":{"key":"4c18630e-e5af-405b-a447-bed6d39dd049","name":"","dogfoodCanary":false,"anonymous":true}}
+  canonicalKey(signed)  : session:4c18630e-e5af-405b-a447-bed6d39dd049:user:4c18630e-e5af-405b-a447-bed6d39dd049
+  canonicalKey(colliding single-kind user context): session:4c18630e-e5af-405b-a447-bed6d39dd049:user:4c18630e-e5af-405b-a447-bed6d39dd049
+  COLLISION (local)     : True
+  test contexts written : orig, collision, control, attrchanged
+
+--- requests (client-side eval route on the in-scope app host) ---
+orig (with h) BASELINE       401         0B  
+orig (NO h)                  401         0B  
+
+  BASELINE FAILED (401) — the published dogfood client-side ID is not served by
+  app.launchdarkly.com/sdk/evalx/. A 401 with a 0-byte body is the same response this route
+  gives for a client-side ID it does not know (see ci-results/run-2 route matrix), and the
+  dogfood config points its own SDK at relay-fdv2-prod.ld.catamorphic.com, which is
+  OUT OF SCOPE and is not contacted by this script.
+  ==> INCONCLUSIVE. No claim is made about server-side secure-mode validation either way.
+      The definitive test runs on OUR OWN environment: tools/ci-authenticated-phase.sh §H
+      (reads our own clientSideId + SDK key with our own token, computes both HMACs locally,
+      probes the colliding context). Requires the LD_TOKEN secret.
+done -> ci-results/run-10/securemode-collision.txt

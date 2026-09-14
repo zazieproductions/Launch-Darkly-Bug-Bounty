@@ -1,0 +1,17 @@
+HTTP/2 404 
+access-control-allow-headers: Accept,Content-Type,Content-Length,Accept-Encoding,Authorization,X-Requested-With,X-LD-Private,X-LD-AccountId,X-LD-EnvId,X-LD-PrjId,X-LaunchDarkly-Event-Schema,X-LaunchDarkly-User-Agent,X-LaunchDarkly-Wrapper,LD-API-Version,X-LaunchDarkly-Tags,X-LaunchDarkly-Instance-Id
+access-control-allow-methods: GET, OPTIONS, HEAD
+access-control-allow-origin: *
+access-control-max-age: 300
+ld-region: us-east-1
+strict-transport-security: max-age=31536000; includeSubDomains
+accept-ranges: bytes
+date: Mon, 14 Sep 2026 00:07:40 GMT
+via: 1.1 varnish
+x-served-by: cache-bfi-krnt7300059-BFI
+x-cache: MISS
+x-cache-hits: 0
+x-timer: S1789344461.661662,VS0,VE65
+vary: Accept-Encoding
+age: 0
+
