@@ -554,3 +554,52 @@ the sandbox is GitHub-only exactly as previously recorded, and no LaunchDarkly h
 
 Unauthenticated by nature, so it needs live egress. The sandbox has none; the CI workflow is the
 route (`tools/ci-internal-probe.sh`). Left as-is; no claim changed.
+
+### CI run 10 — F-001 live-verified, H4 closed, account-header brute force still negative
+
+Pushed the F-003 hardening; the workflow re-ran the unauthenticated suite from a clean runner and
+committed `ci-results/run-10/`.
+
+- **F-001 CONFIRMED LIVE, unauthenticated, today** (`date: Mon, 14 Sep 2026 00:10:31 GMT`):
+  `GET /internal/config/anonymous` → **200, 282,232 B** with no cookie/token/header, while
+  `GET /internal/config/authenticated` → 401 and 20+ other `/internal/*` routes → 401. The gate
+  exists and works; the issue is what `/anonymous` publishes.
+  - `allClientSideFlags` still **2,339** names with values; `pql-signup-junk-country-list` unchanged
+    (`EG,ID,VN,PK,BD,NP,MA,NG,DZ,KE`); dogfood relay/events hosts unchanged.
+  - `secureModeContextHash` differs between captures (`765b5c97…` → `c846bc46…` → `890b3729…`),
+    each over a fresh random dogfood context key → **signing-oracle escalation stays CLOSED**,
+    F-001 stays P4. No claim inflated.
+  - Newly noted in today's body (same root cause, listed for completeness):
+    `observabilityPrivateGraphUrl = https://pri.observability.app.launchdarkly.com` (a *private*
+    graph host handed to anonymous callers), `productAnalyticsBlockServiceUrl` /
+    `productAnalyticsDataServiceUrl`, and the password policy (`minPasswordLength 8`,
+    `passwordMinClasses 3`, `passwordMinCharsPerClass 1`). Build SHA + third-party browser keys
+    present but explicitly excluded by the program — not claimed.
+  - Report updated with a "Live re-verification — 2026-09-13" section.
+- **H4 CLOSED (negative):** `/api/v2/announcements` is not unauthenticated — 401
+  `Invalid account ID header` for every account-ID header name tried (40+ variants), and
+  `Authorization: Bearer <dummy>` uniquely routes into the token branch
+  (`invalid access token`). Matches the earlier "do not re-brute-force" conclusion; stopping here.
+- **Route matrix refresh (useful, not a finding on its own):**
+  `/sdk/evalx/{id}/contexts/{ctx}` answers **400 with a parser error before authenticating the
+  client-side ID** (`couldn't parse user JSON: expected value at line 1 column 1`, `missing field
+  'key'`) but **401 0B** for a well-formed context + bogus id. So the context JSON is parsed
+  pre-auth. Nothing is returned either way and descriptive error messages are an excluded
+  submission type, so this is recorded as route/auth-ordering intel only.
+  Also: `/msdk/evalx/contexts/{ctx}` → 401 (route exists) vs
+  `/msdk/evalx/{id}/contexts/{ctx}` → 404 (no id segment in that route).
+- **F-002 live check re-run: still INCONCLUSIVE, correctly so.** Baseline fails first (401 0B for
+  the published dogfood client-side ID, which is served by the out-of-scope
+  `relay-fdv2-prod.ld.catamorphic.com`), the script fails fast after 2 requests and prints
+  INCONCLUSIVE with the reason. No server-side claim made. The definitive test is
+  `tools/ci-authenticated-phase.sh` §H against our own environment, which needs the `LD_TOKEN`
+  secret — the bot token cannot set repo secrets (`gh secret list` → HTTP 403
+  "Resource not accessible by integration").
+
+### Where things stand (honest summary)
+
+| Finding | Status | Blocking item |
+|---|---|---|
+| **F-003** private-attribute redaction | **Verified, ready to file.** Real vendor code both sides, current HEAD, 7-SDK comparison, wire path cited | Scope wording (`js-core` not `-sdk`-suffixed) — argued in report §0.5 with the 33 published `@launchdarkly/*-sdk` packages |
+| **F-001** `/internal/config/anonymous` | **Verified live, unauthenticated, today.** P4 as written | Nothing technical; escalation path closed by evidence |
+| **F-002** canonicalKey collision | SDK flaw **verified** in two in-scope `-sdk` repos; **server-side impact unproven** | Needs `LD_TOKEN` secret to run §H on our own env |

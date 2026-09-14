@@ -11,6 +11,55 @@
 - **Credentials/keys used:** none. (The response *contains* a client-side ID; that value is
   explicitly excluded from bounty scope and is **not** part of this claim.)
 
+## Live re-verification — 2026-09-13 (CI run 10)
+
+Re-tested unauthenticated from a clean GitHub Actions runner (`tools/ci-internal-probe.sh`); raw
+captures in `ci-results/run-10/`. The behaviour is unchanged and still fully unauthenticated:
+
+| Request (no cookie, no token, no headers) | Result |
+|---|---|
+| `GET /internal/config/anonymous` | **200**, **282,232 bytes** |
+| `GET /internal/config/authenticated` | 401 `{"code":"unauthorized","message":"Invalid account ID header"}` |
+| `GET /internal/` | 200 (unauthenticated route index) |
+| `GET /internal/plans` | 200 (full commercial catalogue) |
+| 20+ other `/internal/*` routes | 401 (gate present and working) |
+
+Response `date: Mon, 14 Sep 2026 00:10:31 GMT`, served via Varnish/Fastly. So the disclosure is
+current, not a stale observation.
+
+Still present in today's body:
+
+- `allClientSideFlags` — **2,339** flag names with evaluated values.
+- `pql-signup-junk-country-list` = `["EG","ID","VN","PK","BD","NP","MA","NG","DZ","KE"]` (unchanged).
+- `dogfoodBaseUri` / `dogfoodStreamUri` = `https://relay-fdv2-prod.ld.catamorphic.com`,
+  `dogfoodClientSideEventsUri` = `https://events.ld.catamorphic.com`.
+- `secureModeContextHash`, and it **changed between captures** (`765b5c97…` originally →
+  `c846bc46…` today → `890b3729…` in the collision probe minutes later), each over a freshly
+  generated random `dogfoodContext` key. This is consistent with the earlier conclusion that the
+  signed context is **not** attacker-influenceable, so the signing-oracle escalation in §"Escalation
+  path" remains **closed** — the claim stays at P4.
+
+Items newly noticed in today's capture (same root cause, same endpoint, listed for completeness
+rather than as separate findings):
+
+- `observabilityPrivateGraphUrl` = `https://pri.observability.app.launchdarkly.com` — the hostname of
+  a **private** graph endpoint, disclosed to anonymous callers alongside the public one
+  (`pub.observability.app.ld.catamorphic.com`) and `otel.observability.app.ld.catamorphic.com`.
+- `productAnalyticsBlockServiceUrl` / `productAnalyticsDataServiceUrl` =
+  `https://product-analytics-api.app.launchdarkly.com/{block-service,data-service}`.
+- Password policy in the clear: `minPasswordLength: 8`, `passwordMinClasses: 3`,
+  `passwordMinCharsPerClass: 1`.
+- `backendVersion` / `frontendVersion` = `5e1f8235c` (a build SHA — version disclosure on its own is
+  an excluded submission type and is **not** claimed).
+- Third-party browser keys (Datadog, Algolia, Stripe publishable, Segment write key, New Relic,
+  Hightouch, Courier, Intercom, Uberfunnel). These are explicitly excluded by the program
+  ("client-side keys or tokens used on our website that are also not required to be kept secret")
+  and are **not** part of this claim.
+
+Also re-confirmed negative on the same run, so neither is a finding: `/api/v2/announcements`
+requires authentication (H4 closed — 401 with every header-name variant tried), and the account-ID
+header name is still not recoverable by guessing (all candidates → identical 401).
+
 ## Summary
 
 `GET https://app.launchdarkly.com/internal/config/anonymous` returns HTTP 200 with a large JSON
