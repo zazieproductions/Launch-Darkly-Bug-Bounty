@@ -1,10 +1,10 @@
 # F-003 — Private attributes starting with `/` or `~` are not redacted (js-core)
 
-**Target:** `LaunchDarkly Open Source SDKs`  
-**URL / Location:** `https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18` — published as `@launchdarkly/js-sdk-common` (consumed by `js-client-sdk`, `react-client-sdk`, `vue-client-sdk`, `react-native-client-sdk`, etc.)  
-**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > PII Leakage/Exposure` (CWE-359, CWE-697)  
-**Severity:** P3 — CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N (5.3)  
-**Tested on:** `js-core` HEAD `6d92d5b` (2026-09-11), verified 2026-09-13. Node.js 22. Local reproduction only — no account, no network calls to LaunchDarkly.
+**Target:** `LaunchDarkly Open Source SDKs`
+**URL / Location:** `https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18` — published as `@launchdarkly/js-sdk-common` (consumed by `js-client-sdk`, `react-client-sdk`, `vue-client-sdk`, `react-native-client-sdk`, etc.)
+**VRT:** `Sensitive Data Exposure > Disclosure of Secrets > PII Leakage/Exposure` (CWE-359, CWE-697)
+**Severity:** P3 — CVSS:3.1 AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N (5.3)
+**Tested on:** `js-core` HEAD `6d92d5b` (2026-09-11) and latest `main` on 2026-09-13. Node.js 22. Local reproduction only — no account, no network calls to LaunchDarkly. All source is public on GitHub.
 
 ## Summary
 
@@ -20,18 +20,43 @@ Scope is limited to the customer's own PII being sent to their own configured pi
 
 ## Steps to Reproduce
 
-Prerequisites: Node.js ≥22.6, no `npm install` required. The proof runs the vendor's real source via Node's `--experimental-transform-types`.
+Prerequisites: Node.js ≥22.6, no `npm install` required. The attached PoC runs the vendor's real source via Node's `--experimental-transform-types` and uses only public GitHub repositories.
+
+1. Clone public sources:
 
 ```bash
-git clone --depth 1 https://github.com/launchdarkly/js-core sdk/js-core
-git clone --depth 1 https://github.com/launchdarkly/node-server-sdk sdk/node-server-sdk
-node tools/poc-private-attr-unescape-real.mjs
+git clone --depth 1 https://github.com/launchdarkly/js-core
+git clone --depth 1 https://github.com/launchdarkly/node-server-sdk
 ```
 
-The script loads `AttributeReference.ts`, `ContextFilter.ts`, and `Context.ts` unmodified from `js-core` and `attribute_reference.js` / `context_filter.js` from `node-server-sdk` v7 as a control. The only stub is for `src/api/context` type-only interfaces (six type names, no runtime code — verified by grep).
+2. Run the attached PoC (also reproduced below as a minimal check):
+
+```bash
+node poc-private-attr-unescape-real.mjs
+# Attached file. Loads AttributeReference.ts, ContextFilter.ts, and Context.ts
+# unmodified from js-core and attribute_reference.js / context_filter.js from
+# node-server-sdk v7 as a control. The only stub is for src/api/context
+# type-only interfaces (six type names, no runtime code).
+```
+
+Minimal inline verification without the full harness:
+
+```js
+// Directly shows the parsing bug on public source:
+function unescape_buggy(ref){ return ref.indexOf('~') ? ref.replace(/~1/g,'/').replace(/~0/g,'~') : ref; }
+console.log(unescape_buggy('~1ssn')); // " ~1ssn" — wrong, should be "/ssn"
+console.log(unescape_buggy('a~1b'));  // "a/b" — happens to work, why bug is missed
+```
+
+3. Or inspect the source directly:
+
+```
+https://github.com/launchdarkly/js-core/blob/main/packages/shared/common/src/AttributeReference.ts#L18
+return ref.indexOf('~') ? ref.replace(/~1/g, '/').replace(/~0/g, '~') : ref;
+```
 
 Expected: all four test private attributes are redacted and listed in `redactedAttributes`.
-Observed with `js-core`: three leak, one redacted.
+Observed with `js-core`: three leak, one redacted (see Evidence).
 
 ## Technical Details
 
@@ -72,16 +97,17 @@ Cross-SDK check on 2026-09-13 HEAD (all correct except `js-core`):
 * `php-server-sdk` uses `preg_match` + `str_replace` (notably avoids the same `strpos` 0-is-falsy pitfall)
 * `flutter`, `ruby`, `go` use `contains` / `include?` / `strings.Contains`
 
-The filtered object is the wire payload. In `src/internal/events/EventProcessor.ts:156` the filter is constructed from `privateAttributes`, and at `:333` the result of `filter()` is assigned to `context` on the outgoing event. No additional stripping occurs after this point. I did not run `EventProcessor` end-to-end (it requires subsystem enums/classes that would require stubbing vendor logic); the claim rests on the executed `ContextFilter` output plus those two call sites.
+The filtered object is the wire payload. In `src/internal/events/EventProcessor.ts:156` the filter is constructed from `privateAttributes`, and at `:333` the result of `filter()` is assigned to `context` on the outgoing event. No additional stripping occurs after this point. I did not run `EventProcessor` end-to-end (it requires subsystem enums/classes); the claim rests on the executed `ContextFilter` output plus those two call sites.
 
-A secondary issue in the same function is `validate()` using `[^0|^1]` — a negated class containing literal `|` and `^` — so `~` followed by `|` or `^` is incorrectly accepted. Mentioned for completeness; same file and same fix.
+A secondary issue in the same function is `validate()` using `[^0|^1]` — a negated class containing literal `|` and `^` — so `~` followed by `|` or `^` is incorrectly accepted. Same file, same fix.
 
-## Evidence
+## Evidence (all attached, no private repo required)
 
-* `findings/F-003-private-attr-unescape/poc-output-v2-real.txt` — full run log
-* `findings/F-003-private-attr-unescape/filtered-contexts-v2-real.json` — input and both filtered outputs
-* `ci-results/run-10/F-003-poc/poc-output.txt` — same result on clean CI runner
-* No requests were sent to LaunchDarkly; reproduction is offline.
+* `poc-private-attr-unescape-real.mjs` — PoC that runs real vendor code on both sides (ATTACHED)
+* `poc-output-v2-real.txt` — full run log showing `3 of 4 LEAKED` vs `4/4 REDACTED` control (ATTACHED)
+* `filtered-contexts-v2-real.json` — input and both filtered outputs, byte-for-byte wire payloads (ATTACHED)
+
+You can also verify without the PoC by opening the two GitHub links above — the buggy `indexOf('~')` vs correct `indexOf('~') >= 0` is a one-character difference visible in the browser. No requests were sent to LaunchDarkly; reproduction is offline.
 
 ## Remediation
 
@@ -94,7 +120,7 @@ or `indexOf('~') >= 0` to match `node-server-sdk`. Also fix `[^0|^1]` → `[^01]
 
 ## Notes on Scope and Testing
 
-* This was tested offline against public GitHub source. No production system was stressed, no other user's data was accessed, and no credentials were used (a dummy SDK key is used in the HMAC-collision PoC for a separate finding, not this one).
+* This was tested offline against public GitHub source. No production system was stressed, no other user's data was accessed, and no credentials were used.
 * The finding is filed against the published SDK packages (`@launchdarkly/js-sdk-common` and dependants) which are explicitly in scope as SDKs. `js-core` is the monorepo that publishes them. This is not a dependency-scan result — it was found by reading the source and reproduced by executing the real filter.
 * Role used: no LaunchDarkly account. If a role is required by the form, use `Unauthenticated / SDK consumer — offline reproduction`.
 

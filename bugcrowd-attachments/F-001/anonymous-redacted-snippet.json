@@ -1,0 +1,28 @@
+{
+  "clientSideId": "5866f389...[redacted]",
+  "dogfoodBaseUri": "https://relay-fdv2-prod.ld.catamorphic.com",
+  "dogfoodStreamUri": "https://relay-fdv2-prod.ld.catamorphic.com",
+  "allClientSideFlags_sample": {
+    "pql-signup-junk-country-list": [
+      "EG",
+      "ID",
+      "VN",
+      "PK",
+      "BD",
+      "NP",
+      "MA",
+      "NG",
+      "DZ",
+      "KE"
+    ],
+    "experiment-metric-compatibility-rules_sample": [
+      {
+        "docNote": "LAUNC-xxxx \u2014 [redacted]",
+        "reason": "Q3 2026 target, not yet built [redacted]"
+      }
+    ],
+    "totalFlags": 2339,
+    "_note": "Full body live at https://app.launchdarkly.com/internal/config/anonymous \u2014 snippet redacts values. Triage should fetch live."
+  },
+  "secureModeContextHash": "c846bc4686e7...[truncated]"
+}
